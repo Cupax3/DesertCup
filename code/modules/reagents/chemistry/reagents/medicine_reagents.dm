@@ -1298,9 +1298,9 @@
 	. = 1
 
 datum/reagent/medicine/super_stimpak
-	name = "super stim chemicals"
+	name = "Advanced Stimpak Fluid"
 	id = "super_stimpak"
-	description = "Chemicals found in pre-war stimpaks."
+	description = "A strange concoction of medicines and chemicals. This heals faster than normal stimpaks, but has a lower overdose threshold."
 	reagent_state = LIQUID
 	color = "#e50d0d"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
