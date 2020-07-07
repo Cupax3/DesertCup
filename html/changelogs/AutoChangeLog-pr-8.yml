@@ -1,5 +1,0 @@
-author: "genessee596"
-delete-after: True
-changes: 
-  - tweak: "Gunpowder bottles now hold 10u instead of 60u"
-  - imageadd: "Naturally spawned gunpowder bottles now have a cool sprite."
