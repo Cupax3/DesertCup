@@ -222,3 +222,10 @@
 	icon_state = "rustedstimpakpen"
 	amount_per_transfer_from_this = 10
 	list_reagents = list("diluted_stimpak" = 10)
+	
+/obj/item/reagent_containers/hypospray/medipen/stimpak/ultra
+	name = "ultra stimpak"
+	desc = "A high-tech delivery system loaded with a powerful mixture containing numerous medicines that rapidly heal even the most mortal of wounds."
+	icon_state = "ultrastimpakpen"
+	amount_per_transfer_from_this = 10
+	list_reagents = list("ultra_stimpak" = 10)
