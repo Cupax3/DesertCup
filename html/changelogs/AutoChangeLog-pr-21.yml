@@ -1,0 +1,8 @@
+author: "Cupax3"
+delete-after: True
+changes: 
+  - rscadd: "\"New\" admin system."
+  - server: "DBCore updated."
+  - config: "Lots of new config options, updated basic config will arrive sometime soon."
+  - refactor: "Too much to describe, please look carefully for a brick to mash your head in before proceeding into the code. Thanks."
+  - bugfix: "Jobban system, hopefully."
