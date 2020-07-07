@@ -193,7 +193,7 @@ Turf and target are separate in case you want to teleport some distance from a t
 	var/newname
 	var/loop = 1
 	var/safety = 0
-	var/banned = jobban_isbanned(src, "appearance")
+	var/banned = is_banned_from(src.ckey, "appearance")
 
 	while(loop && safety < 5)
 		if(C && C.prefs.custom_names[role] && !safety && !banned)
@@ -231,60 +231,6 @@ Turf and target are separate in case you want to teleport some distance from a t
 //Picks a string of symbols to display as the law number for hacked or ion laws
 /proc/ionnum()
 	return "[pick("!","@","#","$","%","^","&")][pick("!","@","#","$","%","^","&","*")][pick("!","@","#","$","%","^","&","*")][pick("!","@","#","$","%","^","&","*")]"
-
-//Returns a list of unslaved cyborgs
-/proc/active_free_borgs()
-	. = list()
-	for(var/mob/living/silicon/robot/R in GLOB.alive_mob_list)
-		if(R.connected_ai || R.shell)
-			continue
-		if(R.stat == DEAD)
-			continue
-		if(R.emagged || R.scrambledcodes)
-			continue
-		. += R
-
-//Returns a list of AI's
-/proc/active_ais(check_mind=0)
-	. = list()
-	for(var/mob/living/silicon/ai/A in GLOB.alive_mob_list)
-		if(A.stat == DEAD)
-			continue
-		if(A.control_disabled == 1)
-			continue
-		if(check_mind)
-			if(!A.mind)
-				continue
-		. += A
-	return .
-
-//Find an active ai with the least borgs. VERBOSE PROCNAME HUH!
-/proc/select_active_ai_with_fewest_borgs()
-	var/mob/living/silicon/ai/selected
-	var/list/active = active_ais()
-	for(var/mob/living/silicon/ai/A in active)
-		if(!selected || (selected.connected_robots.len > A.connected_robots.len))
-			selected = A
-
-	return selected
-
-/proc/select_active_free_borg(mob/user)
-	var/list/borgs = active_free_borgs()
-	if(borgs.len)
-		if(user)
-			. = input(user,"Unshackled cyborg signals detected:", "Cyborg Selection", borgs[1]) in borgs
-		else
-			. = pick(borgs)
-	return .
-
-/proc/select_active_ai(mob/user)
-	var/list/ais = active_ais()
-	if(ais.len)
-		if(user)
-			. = input(user,"AI signals detected:", "AI Selection", ais[1]) in ais
-		else
-			. = pick(ais)
-	return .
 
 //Returns a list of all items of interest with their name
 /proc/getpois(mobs_only=0,skip_mindless=0)
@@ -371,80 +317,6 @@ Turf and target are separate in case you want to teleport some distance from a t
 	else if (units < 1000000000) // Less than a GJ
 		return "[round(units * 0.000001, 0.001)] MJ"
 	return "[round(units * 0.000000001, 0.0001)] GJ"
-
-/proc/key_name(whom, include_link = null, include_name = 1)
-	var/mob/M
-	var/client/C
-	var/key
-	var/ckey
-	var/fallback_name
-
-	if(!whom)
-		return "*null*"
-	if(istype(whom, /client))
-		C = whom
-		M = C.mob
-		key = C.key
-		ckey = C.ckey
-	else if(ismob(whom))
-		M = whom
-		C = M.client
-		key = M.key
-		ckey = M.ckey
-	else if(istext(whom))
-		key = whom
-		ckey = ckey(whom)
-		C = GLOB.directory[ckey]
-		if(C)
-			M = C.mob
-	else if(istype(whom,/datum/mind))
-		var/datum/mind/mind = whom
-		key = mind.key
-		ckey = ckey(key)
-		if(mind.current)
-			M = mind.current
-			if(M.client)
-				C = M.client
-		else
-			fallback_name = mind.name
-	else
-		return "*invalid*"
-
-	. = ""
-
-	if(!ckey)
-		include_link = 0
-
-	if(key)
-		if(C && C.holder && C.holder.fakekey && !include_name)
-			if(include_link)
-				. += "<a href='?priv_msg=[C.findStealthKey()]'>"
-			. += "Administrator"
-		else
-			if(include_link)
-				. += "<a href='?priv_msg=[ckey]'>"
-			. += key
-		if(!C)
-			. += "\[DC\]"
-
-		if(include_link)
-			. += "</a>"
-	else
-		. += "*no key*"
-
-	if(include_name)
-		if(M)
-			if(M.real_name)
-				. += "/([M.real_name])"
-			else if(M.name)
-				. += "/([M.name])"
-		else if(fallback_name)
-			. += "/([fallback_name])"
-
-	return .
-
-/proc/key_name_admin(whom, include_name = 1)
-	return key_name(whom, 1, include_name)
 
 /proc/get_mob_by_ckey(key)
 	if(!key)

@@ -1757,7 +1757,7 @@ datum/reagent/medicine/bitter_drink/on_mob_life(mob/living/M)
 	M.adjustOxyLoss(8*REM, 0)
 	..()
 	. = 1
-	
+  
 /datum/reagent/medicine/ultra_stimpak
 	name = "Experimental Stimpak Fluid"
 	id = "ultra_stimpak"

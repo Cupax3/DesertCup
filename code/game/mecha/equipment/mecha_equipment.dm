@@ -147,10 +147,11 @@
 		chassis.occupant_message("[icon2html(src, chassis.occupant)] [message]")
 	return
 
-/obj/item/mecha_parts/mecha_equipment/proc/log_message(message)
+/obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally)
 	if(chassis)
-		chassis.log_message("<i>[src]:</i> [message]")
-	return
+		chassis.log_message("ATTACHMENT: [src] [message]", message_type, color)
+	else
+		..()
 
 
 //Used for reloading weapons/tools etc. that use some form of resource

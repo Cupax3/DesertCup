@@ -1,0 +1,323 @@
+Logging in...connected
+Logged in as Cupax3.
+Tue Jul 07 20:53:53 2020
+World opened on network port 3337.
+Welcome BYOND! (5.0 Public Version 513.1526)
+649 global variables
+World loaded at 20:53:59!
+## WARNING: /tg/station 13 uses many file operations, a few shell()s, and some external call()s. Trusted mode is recommended. You can download our source code for your own browsing and compilation at https://github.com/tgstation/tgstation 
+Running /tg/ revision:
+Running /tg/ revision: 2020-07-05
+origin/master: d16bb80b8531712e0f585aa00c4fa5c9ce6bbcb5
+[20:53:59] Runtime in config_entry.dm,153: Keyed list of type /datum/config_entry/keyed_list/cross_server created with null key or value mode!
+  proc name: New (/datum/config_entry/keyed_list/New)
+  src: cross_server (/datum/config_entry/keyed_list/cross_server)
+  call stack:
+  cross_server (/datum/config_entry/keyed_list/cross_server): New()
+  Configuration (/datum/controller/configuration): InitEntries()
+  Configuration (/datum/controller/configuration): Load(null)
+  world: New()
+[20:53:59] Runtime in config_entry.dm,153: Keyed list of type /datum/config_entry/keyed_list/policy created with null key or value mode!
+  proc name: New (/datum/config_entry/keyed_list/New)
+  src: policy (/datum/config_entry/keyed_list/policy)
+  call stack:
+  policy (/datum/config_entry/keyed_list/policy): New()
+  Configuration (/datum/controller/configuration): InitEntries()
+  Configuration (/datum/controller/configuration): Load(null)
+  world: New()
+Loading config file config.txt...
+Unknown setting in configuration: 'b36966200057817381492604265381fadbeaba88#'
+Loading config file game_options.txt...
+Loading config file dbconfig.txt...
+Loading config file comms.txt...
+Loading config file antag_rep.txt...
+Entry irc_announce_new_game is deprecated and will be removed soon. Migrate to chat_announce_new_game! Suggested new value is: 
+Loading config file maps.txt...
+Unknown command in map vote config: 'votable'
+Unknown command in map vote config: 'votable'
+Unknown command in map vote config: 'votable'
+[20:53:59] Runtime in holder2.dm,45: Admin datum created without a rank
+  proc name: New (/datum/admins/New)
+  src: nobody\'s admin datum (no rank... (/datum/admins)
+  call stack:
+  nobody\'s admin datum (no rank... (/datum/admins): New(null, "cupax3", 0, 1)
+  load admins(null)
+  world: New()
+[20:54:00] Runtime in ,: bad arg name 'verify'
+  proc name: send asset list (/proc/send_asset_list)
+  usr: Cupax3/(Cupax3)
+  usr.loc: (start area (180,247,1))
+  src: null
+  call stack:
+  send asset list(Cupax3 (/mob/dead/new_player), /list (/list), null)
+  /datum/browser (/datum/browser): open(0)
+  Cupax3 (/mob/dead/new_player): new player panel()
+  Cupax3 (/mob/dead/new_player): Login()
+  Cupax3 (/client): New(null)
+[20:54:00] Runtime in ,: bad arg name 'confidential'
+  proc name: to chat (/proc/to_chat)
+  src: null
+  call stack:
+  to chat(null, "Failed ...", null)
+  get message output("watchlist entry", "cupax3")
+  Cupax3 (/client): New(null)
+[20:54:00] Runtime in ,: bad arg name 'confidential'
+  proc name: to chat (/proc/to_chat)
+  src: null
+  call stack:
+  to chat(null, "Failed ...", null)
+  get message output("message", "cupax3")
+  Cupax3 (/client): New(null)
+Initialized Database subsystem within 0 seconds!
+Initialized Blackbox subsystem within 0 seconds!
+Initialized Server Tasks subsystem within 0 seconds!
+Initialized Input subsystem within 0 seconds!
+[20:54:00] Runtime in unsorted.dm,1113: WARNING: Design ID clash with ID emitter detected!
+  proc name: stack trace (/proc/stack_trace)
+  src: null
+  call stack:
+  stack trace("WARNING: Design ID clash with ...")
+  initialize all techweb designs(0)
+  Research (/datum/controller/subsystem/research): Initialize(680401)
+  Master (/datum/controller/master): Initialize(10, 0)
+## WARNING: Invalid research design with ID siege cannon detected in node Industrial Engineering[engineering] removed. in code/modules/research/techweb/__techweb_helpers.dm at line 94 src:  usr: .
+## WARNING: Invalid research design with ID ci-thermals detected in node Combat Cybernetic Implants[combat_cyber_implants] removed. in code/modules/research/techweb/__techweb_helpers.dm at line 94 src:  usr: .
+Initialized Research subsystem within 0 seconds!
+Initialized Events subsystem within 0 seconds!
+Initialized Jobs subsystem within 0 seconds!
+Initialized Quirks subsystem within 0 seconds!
+Initialized Ticker subsystem within 0 seconds!
+Loading Pahrump...
+[20:54:06] Runtime in reader.dm,704: Undefined model key in DMM: aaa
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+  src: /datum/maploader (/datum/maploader)
+  call stack:
+  /datum/maploader (/datum/maploader): load map impl(_maps/map_files/Pahrump/Pahrum..., 1, 1, 2, null, null, 1, -1e+031, 1e+031, -1e+031, 1e+031, 0)
+  /datum/maploader (/datum/maploader): load map(_maps/map_files/Pahrump/Pahrum..., 0, 0, 2, null, null, 1, null, null, null, null, null)
+  Mapping (/datum/controller/subsystem/mapping): LoadGroup(/list (/list), "Wasteland", "map_files/Pahrump", /list (/list), /list (/list), /list (/list), 0)
+  Mapping (/datum/controller/subsystem/mapping): loadWorld()
+  Mapping (/datum/controller/subsystem/mapping): Initialize(680401)
+  Master (/datum/controller/master): Initialize(10, 0)
+Loaded Wasteland in 6.3s!
+[20:54:06] Runtime in reader.dm,704: Undefined model key in DMM: aa
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+  src: /datum/maploader (/datum/maploader)
+  call stack:
+  /datum/maploader (/datum/maploader): load map impl(_maps/map_files/Pahrump/Dungeo..., 1, 1, 4, null, null, 1, -1e+031, 1e+031, -1e+031, 1e+031, 0)
+  /datum/maploader (/datum/maploader): load map(_maps/map_files/Pahrump/Dungeo..., 0, 0, 4, null, null, 1, null, null, null, null, null)
+  Mapping (/datum/controller/subsystem/mapping): LoadGroup(/list (/list), "Dungeons", "map_files/Pahrump", /list (/list), /list (/list), /list (/list), 0)
+  Mapping (/datum/controller/subsystem/mapping): loadWorld()
+  Mapping (/datum/controller/subsystem/mapping): Initialize(680401)
+  Master (/datum/controller/master): Initialize(10, 0)
+Loaded Dungeons in 0.4s!
+RED ALERT! The following map files failed to load: _maps/map_files/Pahrump/Pahrump.dmm, _maps/map_files/Pahrump/Dungeons.dmm. Yell at your server host!
+Ruin loader finished with 0 left to spend.
+ERROR: Wasteland areas list failed to generate!
+Initialized Mapping subsystem within 10.4 seconds!
+Initialized Networks subsystem within 0 seconds!
+[20:54:10] Runtime in status_procs.dm,191: bad index
+  proc name: has trait (/mob/living/proc/has_trait)
+  src: Experiment 35b (/mob/living/simple_animal/hostile/netherworld)
+  src.loc: the grass patch (76,198,1) (/turf/open/floor/grass)
+  call stack:
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): has trait("fakedeath", null)
+  RoundHealth(Experiment 35b (/mob/living/simple_animal/hostile/netherworld))
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): med hud set health()
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): prepare data huds()
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): prepare huds()
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Atoms (/datum/controller/subsystem/atoms): InitAtom(Experiment 35b (/mob/living/simple_animal/hostile/netherworld), /list (/list))
+  Atoms (/datum/controller/subsystem/atoms): InitializeAtoms(null)
+  Atoms (/datum/controller/subsystem/atoms): Initialize(680505)
+  Master (/datum/controller/master): Initialize(10, 0)
+[20:54:10] Runtime in status_procs.dm,191: bad index
+  proc name: has trait (/mob/living/proc/has_trait)
+  src: Experiment 35b (/mob/living/simple_animal/hostile/netherworld)
+  src.loc: the grass patch (76,198,1) (/turf/open/floor/grass)
+  call stack:
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): has trait("fakedeath", null)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): med hud set status()
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): prepare data huds()
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): prepare huds()
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Experiment 35b (/mob/living/simple_animal/hostile/netherworld): Initialize(1)
+  Atoms (/datum/controller/subsystem/atoms): InitAtom(Experiment 35b (/mob/living/simple_animal/hostile/netherworld), /list (/list))
+  Atoms (/datum/controller/subsystem/atoms): InitializeAtoms(null)
+  Atoms (/datum/controller/subsystem/atoms): Initialize(680505)
+  Master (/datum/controller/master): Initialize(10, 0)
+[20:54:10] Runtime in ,: bad arg name 'confidential'
+  proc name: to chat (/proc/to_chat)
+  src: null
+  call stack:
+  to chat(/list (/list), "<span cl...", null)
+  message admins("<span cl...")
+  the xeno egg delivery (/obj/effect/spawner/xeno_egg_delivery): Initialize(1)
+  Atoms (/datum/controller/subsystem/atoms): InitAtom(the xeno egg delivery (/obj/effect/spawner/xeno_egg_delivery), /list (/list))
+  the xeno egg delivery (/obj/effect/spawner/xeno_egg_delivery): New(1)
+  2% chance xeno egg spawner (/obj/effect/spawner/lootdrop/two_percent_xeno_egg_spawner): Initialize(1)
+  Atoms (/datum/controller/subsystem/atoms): InitAtom(2% chance xeno egg spawner (/obj/effect/spawner/lootdrop/two_percent_xeno_egg_spawner), /list (/list))
+  Atoms (/datum/controller/subsystem/atoms): InitializeAtoms(null)
+  Atoms (/datum/controller/subsystem/atoms): Initialize(680505)
+  Master (/datum/controller/master): Initialize(10, 0)
+Initialized Atoms subsystem within 5.2 seconds!
+Initialized Language subsystem within 0 seconds!
+Initialized Machines subsystem within 0 seconds!
+Initialized Circuit subsystem within 0.1 seconds!
+Initialized Disease subsystem within 0 seconds!
+Initialized Medals subsystem within 0 seconds!
+Initialized Radiation subsystem within 0 seconds!
+Initialized Day/Night Cycle subsystem within 0 seconds!
+Initialized Night Shift subsystem within 0 seconds!
+Initialized Parallax subsystem within 0 seconds!
+Initialized Bot Comms subsystem within 0 seconds!
+Initialized Traumas subsystem within 0.1 seconds!
+Initialized Weather subsystem within 0 seconds!
+## WARNING: There are 6 active turfs at roundstart, this is a mapping error caused by a difference of the air between the adjacent turfs. You can see its coordinates using "Mapping -> Show roundstart AT list" verb (debug verbs required)
+## WARNING: HEY! LISTEN! 0 seconds were wasted processing 6 turf(s) (connected to 14 other turfs) with atmos differences at round start.
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (128, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/manifold/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (129, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (127, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (129, 86, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (130, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (126, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (129, 87, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (131, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/manifold/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (125, 85, 1)
+## WARNING: build_pipeline(): /obj/machinery/atmospherics/pipe/simple/supply/hidden added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: (129, 88, 1)
+## WARNING: build_pipeline(): further messages about pipenets will be supressed
+Initialized Atmospherics subsystem within 0.8 seconds!
+[20:54:17] Runtime in asset_list.dm,140: duplicate sprite "emitter" in sheet design (/datum/asset/spritesheet/research_designs)
+  proc name: Insert (/datum/asset/spritesheet/proc/Insert)
+  src: design (/datum/asset/spritesheet/research_designs)
+  call stack:
+  design (/datum/asset/spritesheet/research_designs): Insert("emitter", /icon (/icon), "", 2, 1, 0)
+  design (/datum/asset/spritesheet/research_designs): register()
+  design (/datum/asset/spritesheet/research_designs): New()
+  get asset datum(/datum/asset/spritesheet/resea... (/datum/asset/spritesheet/research_designs))
+  Assets (/datum/controller/subsystem/assets): Initialize(680567)
+  Master (/datum/controller/master): Initialize(10, 0)
+## WARNING: design /datum/design/c4570tube with icon 'icons/obj/ammo.dmi' missing state '44tube'
+## WARNING: design /datum/design/m44tube with icon 'icons/obj/ammo.dmi' missing state '44tube'
+## WARNING: design /datum/design/a357tube with icon 'icons/obj/ammo.dmi' missing state '44tube'
+## WARNING: design /datum/design/tablet with icon 'icons/obj/modular_tablet.dmi' missing state 'tablet'
+Initialized Assets subsystem within 1.1 seconds!
+Initialized Icon Smoothing subsystem within 0.3 seconds!
+Initialized Overlay subsystem within 0.2 seconds!
+Initialized XKeyScore subsystem within 0 seconds!
+Initialized PRISM subsystem within 0 seconds!
+Initialized Lighting subsystem within 0.9 seconds!
+[20:54:19] Runtime in reader.dm,718: cannot read from list
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+  src: /datum/maploader (/datum/maploader)
+  call stack:
+  /datum/maploader (/datum/maploader): load map impl(_maps/shuttles/Brotherhood_of_..., 17, 192, 1, 1, null, 0, -1e+031, 1e+031, -1e+031, 1e+031, 1)
+  /datum/maploader (/datum/maploader): load map(_maps/shuttles/Brotherhood_of_..., 17, 192, 1, 1, null, 0, null, null, null, null, 1)
+  brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base): load(space (17,192,1) (/turf/open/space/basic), 1)
+  brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base): load(space (21,195,1) (/turf/open/space/basic), 1)
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): load template(brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base))
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): action load(brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base), Brotherhood_of_Steel (/obj/docking_port/stationary/bos))
+  Brotherhood_of_Steel (/obj/docking_port/stationary/bos): load roundstart()
+  Shuttle (/datum/controller/subsystem/shuttle): initial load()
+  Shuttle (/datum/controller/subsystem/shuttle): Initialize(680592)
+  Master (/datum/controller/master): Initialize(10, 0)
+[20:54:19] Runtime in ,: bad arg name 'confidential'
+  proc name: to chat (/proc/to_chat)
+  src: null
+  call stack:
+  to chat(/list (/list), "<span cl...", null)
+  message admins("<span cl...")
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): load template(brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base))
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): action load(brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base), Brotherhood_of_Steel (/obj/docking_port/stationary/bos))
+  Brotherhood_of_Steel (/obj/docking_port/stationary/bos): load roundstart()
+  Shuttle (/datum/controller/subsystem/shuttle): initial load()
+  Shuttle (/datum/controller/subsystem/shuttle): Initialize(680592)
+  Master (/datum/controller/master): Initialize(10, 0)
+## WARNING: load_template(): Shuttle Template _maps/shuttles/Brotherhood_of_Steel_base.dmm has no mobile docking port. Aborting import. in code/modules/shuttle/manipulator.dm at line 292 src: the shuttle manipulator usr: .
+[20:54:19] Runtime in manipulator.dm,220: Cannot execute null.canDock().
+  proc name: action load (/obj/machinery/shuttle_manipulator/proc/action_load)
+  src: the shuttle manipulator (/obj/machinery/shuttle_manipulator)
+  src.loc: the floor (73,78,1) (/turf/open/floor/circuit/green)
+  call stack:
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): action load(brotherhood of steel (base) (/datum/map_template/shuttle/bosbase/base), Brotherhood_of_Steel (/obj/docking_port/stationary/bos))
+  Brotherhood_of_Steel (/obj/docking_port/stationary/bos): load roundstart()
+  Shuttle (/datum/controller/subsystem/shuttle): initial load()
+  Shuttle (/datum/controller/subsystem/shuttle): Initialize(680592)
+  Master (/datum/controller/master): Initialize(10, 0)
+[20:54:19] Runtime in reader.dm,718: cannot read from list
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+  src: /datum/maploader (/datum/maploader)
+  call stack:
+  /datum/maploader (/datum/maploader): load map impl(_maps/shuttles/emergency_box.d..., 19, 183, 1, 1, null, 0, -1e+031, 1e+031, -1e+031, 1e+031, 1)
+  /datum/maploader (/datum/maploader): load map(_maps/shuttles/emergency_box.d..., 19, 183, 1, 1, null, 0, null, null, null, null, 1)
+  Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box): load(space (19,183,1) (/turf/open/space/basic), 1)
+  Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box): load(space (21,195,1) (/turf/open/space), 1)
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): load template(Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box))
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): action load(Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box), CentCom Emergency Shuttle Dock (/obj/docking_port/stationary))
+  CentCom Emergency Shuttle Dock (/obj/docking_port/stationary): load roundstart()
+  Shuttle (/datum/controller/subsystem/shuttle): initial load()
+  Shuttle (/datum/controller/subsystem/shuttle): Initialize(680592)
+  Master (/datum/controller/master): Initialize(10, 0)
+[20:54:19] Runtime in ,: bad arg name 'confidential'
+  proc name: to chat (/proc/to_chat)
+  src: null
+  call stack:
+  to chat(/list (/list), "<span cl...", null)
+  message admins("<span cl...")
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): load template(Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box))
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): action load(Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box), CentCom Emergency Shuttle Dock (/obj/docking_port/stationary))
+  CentCom Emergency Shuttle Dock (/obj/docking_port/stationary): load roundstart()
+  Shuttle (/datum/controller/subsystem/shuttle): initial load()
+  Shuttle (/datum/controller/subsystem/shuttle): Initialize(680592)
+  Master (/datum/controller/master): Initialize(10, 0)
+## WARNING: load_template(): Shuttle Template _maps/shuttles/emergency_box.dmm has no mobile docking port. Aborting import. in code/modules/shuttle/manipulator.dm at line 292 src: the shuttle manipulator usr: .
+[20:54:19] Runtime in manipulator.dm,220: Cannot execute null.canDock().
+  proc name: action load (/obj/machinery/shuttle_manipulator/proc/action_load)
+  src: the shuttle manipulator (/obj/machinery/shuttle_manipulator)
+  src.loc: the floor (73,78,1) (/turf/open/floor/circuit/green)
+  call stack:
+  the shuttle manipulator (/obj/machinery/shuttle_manipulator): action load(Box Station Emergency Shuttle (/datum/map_template/shuttle/emergency/box), CentCom Emergency Shuttle Dock (/obj/docking_port/stationary))
+  CentCom Emergency Shuttle Dock (/obj/docking_port/stationary): load roundstart()
+  Shuttle (/datum/controller/subsystem/shuttle): initial load()
+  Shuttle (/datum/controller/subsystem/shuttle): Initialize(680592)
+  Master (/datum/controller/master): Initialize(10, 0)
+[20:54:19] Runtime in reader.dm,718: cannot read from list
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+[20:54:19] Runtime in ,: bad arg name 'confidential'
+## WARNING: load_template(): Shuttle Template _maps/shuttles/ferry_fancy.dmm has no mobile docking port. Aborting import. in code/modules/shuttle/manipulator.dm at line 292 src: the shuttle manipulator usr: .
+[20:54:19] Runtime in manipulator.dm,220: Cannot execute null.canDock().
+  proc name: action load (/obj/machinery/shuttle_manipulator/proc/action_load)
+[20:54:19] Runtime in reader.dm,718: cannot read from list
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+[20:54:19] Runtime in ,: bad arg name 'confidential'
+## WARNING: load_template(): Shuttle Template _maps/shuttles/cargo_box.dmm has no mobile docking port. Aborting import. in code/modules/shuttle/manipulator.dm at line 292 src: the shuttle manipulator usr: .
+[20:54:19] Runtime in manipulator.dm,220: Cannot execute null.canDock().
+  proc name: action load (/obj/machinery/shuttle_manipulator/proc/action_load)
+[20:54:19] Runtime in reader.dm,718: cannot read from list
+  proc name: load map impl (/datum/maploader/proc/load_map_impl)
+[20:54:19] Runtime in ,: bad arg name 'confidential'
+## WARNING: load_template(): Shuttle Template _maps/shuttles/assault_pod_default.dmm has no mobile docking port. Aborting import. in code/modules/shuttle/manipulator.dm at line 292 src: the shuttle manipulator usr: .
+[20:54:19] Runtime in manipulator.dm,220: Cannot execute null.canDock().
+  proc name: action load (/obj/machinery/shuttle_manipulator/proc/action_load)
+[20:54:19] Runtime in ,: bad arg name 'confidential'
+## WARNING: load_template(): Shuttle Template _maps/shuttles/infiltrator_basic.dmm has no mobile docking port. Aborting import. in code/modules/shuttle/manipulator.dm at line 292 src: the shuttle manipulator usr: .
+[20:54:19] Runtime in manipulator.dm,220: Cannot execute null.canDock().
+  proc name: action load (/obj/machinery/shuttle_manipulator/proc/action_load)
+## WARNING: No /obj/docking_port/mobile/emergency placed on the map! in code/controllers/subsystem/shuttle.dm at line 68 src: Shuttle usr: .
+## WARNING: No /obj/docking_port/mobile/supply placed on the map! in code/controllers/subsystem/shuttle.dm at line 72 src: Shuttle usr: .
+Initialized Shuttle subsystem within 0.2 seconds!
+Initialized Squeak subsystem within 0 seconds!
+Initialized Pathfinder subsystem within 0 seconds!
+Initialized Persistence subsystem within 0 seconds!
+Initializations complete within 19.3 seconds!
+[20:54:21] Runtime in ,: bad arg name 'confidential'
+
+BYOND hub reports port 3337 cannot be reached by players.
+
+A firewall or router may be interfering with your connection. For information on hosting worlds through a firewall or router, please visit BYOND Help or portforward.com.
+
+Stopped server.

@@ -136,7 +136,7 @@
 	if(!SSticker.HasRoundStarted())
 		alert("The game hasn't started yet!")
 		return
-	var/list/dat = list("<html><head><title>Round Status</title></head><body><h1><B>Round Status</B></h1>")
+	var/list/dat = list("<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'><title>Round Status</title></head><body><h1><B>Round Status</B></h1>")
 	if(SSticker.mode.replacementmode)
 		dat += "Former Game Mode: <B>[SSticker.mode.name]</B><BR>"
 		dat += "Replacement Game Mode: <B>[SSticker.mode.replacementmode.name]</B><BR>"
@@ -149,22 +149,25 @@
 	else
 		var/timeleft = SSshuttle.emergency.timeLeft()
 		if(SSshuttle.emergency.mode == SHUTTLE_CALL)
-			dat += "ETA: <a href='?_src_=holder;[HrefToken()];edit_shuttle_time=1'>[(timeleft / 60) % 60]:[add_zero(num2text(timeleft % 60), 2)]</a><BR>"
+			dat += "ETA: <a href='?_src_=holder;[HrefToken()];edit_shuttle_time=1'>[(timeleft / 60) % 60]:[add_leading(num2text(timeleft % 60), 2, "0")]</a><BR>"
 			dat += "<a href='?_src_=holder;[HrefToken()];call_shuttle=2'>Send Back</a><br>"
 		else
-			dat += "ETA: <a href='?_src_=holder;[HrefToken()];edit_shuttle_time=1'>[(timeleft / 60) % 60]:[add_zero(num2text(timeleft % 60), 2)]</a><BR>"
+			dat += "ETA: <a href='?_src_=holder;[HrefToken()];edit_shuttle_time=1'>[(timeleft / 60) % 60]:[add_leading(num2text(timeleft % 60), 2, "0")]</a><BR>"
 	dat += "<B>Continuous Round Status</B><BR>"
-	dat += "<a href='?_src_=holder;[HrefToken()];toggle_continuous=1'>[CONFIG_GET(keyed_flag_list/continuous)[SSticker.mode.config_tag] ? "Continue if antagonists die" : "End on antagonist death"]</a>"
-	if(CONFIG_GET(keyed_flag_list/continuous)[SSticker.mode.config_tag])
-		dat += ", <a href='?_src_=holder;[HrefToken()];toggle_midround_antag=1'>[CONFIG_GET(keyed_flag_list/midround_antag)[SSticker.mode.config_tag] ? "creating replacement antagonists" : "not creating new antagonists"]</a><BR>"
+	dat += "<a href='?_src_=holder;[HrefToken()];toggle_continuous=1'>[CONFIG_GET(keyed_list/continuous)[SSticker.mode.config_tag] ? "Continue if antagonists die" : "End on antagonist death"]</a>"
+	if(CONFIG_GET(keyed_list/continuous)[SSticker.mode.config_tag])
+		dat += ", <a href='?_src_=holder;[HrefToken()];toggle_midround_antag=1'>[CONFIG_GET(keyed_list/midround_antag)[SSticker.mode.config_tag] ? "creating replacement antagonists" : "not creating new antagonists"]</a><BR>"
 	else
 		dat += "<BR>"
-	if(CONFIG_GET(keyed_flag_list/midround_antag)[SSticker.mode.config_tag])
+	if(CONFIG_GET(keyed_list/midround_antag)[SSticker.mode.config_tag])
 		dat += "Time limit: <a href='?_src_=holder;[HrefToken()];alter_midround_time_limit=1'>[CONFIG_GET(number/midround_antag_time_check)] minutes into round</a><BR>"
 		dat += "Living crew limit: <a href='?_src_=holder;[HrefToken()];alter_midround_life_limit=1'>[CONFIG_GET(number/midround_antag_life_check) * 100]% of crew alive</a><BR>"
 		dat += "If limits past: <a href='?_src_=holder;[HrefToken()];toggle_noncontinuous_behavior=1'>[SSticker.mode.round_ends_with_antag_death ? "End The Round" : "Continue As Extended"]</a><BR>"
 	dat += "<a href='?_src_=holder;[HrefToken()];end_round=[REF(usr)]'>End Round Now</a><br>"
-	dat += "<a href='?_src_=holder;[HrefToken()];delay_round_end=1'>[SSticker.delay_end ? "End Round Normally" : "Delay Round End"]</a>"
+	dat += "<a href='?_src_=holder;[HrefToken()];delay_round_end=1'>[SSticker.delay_end ? "End Round Normally" : "Delay Round End"]</a><br>"
+	dat += "<a href='?_src_=holder;[HrefToken()];ctf_toggle=1'>Enable/Disable CTF</a><br>"
+	dat += "<a href='?_src_=holder;[HrefToken()];rebootworld=1'>Reboot World</a><br>"
+	dat += "<a href='?_src_=holder;[HrefToken()];check_teams=1'>Check Teams</a>"
 	var/connected_players = GLOB.clients.len
 	var/lobby_players = 0
 	var/observers = 0
@@ -213,41 +216,3 @@
 
 	dat += "</body></html>"
 	usr << browse(dat.Join(), "window=roundstatus;size=500x500")
-
-// Check Gangs
-
-/datum/admins/proc/check_gangs()
-	if(!SSticker.HasRoundStarted())
-		alert("The game hasn't started yet!")
-		return
-	var/list/dat = list("<html><head><title>Gangs Overview</title></head><body><h1><B>Gangs Overview</B></h1>")
-
-	for(var/datum/gang/G in GLOB.all_gangs)
-		var/mob/living/Leader = G.leader
-		dat += "<BR><b>Name:</b> [G.name]"
-		dat += "<BR><b>Gang Color:</b> [G.color]"
-		if(G.welcome_text)
-			dat += "<BR><b>Welcome text:</b> [G.welcome_text]"
-		else
-			dat += "<BR><b>No welcome text set!</b>"
-		if(Leader)
-			dat += "<BR><b>Leader:</b> [Leader.real_name] <b>as</b> [G.leader] [Leader.mob_dead_or_alive_print()] <a href='?priv_msg=[ckey(Leader.key)]'>PM</a> <a href='?_src_=holder;[HrefToken()];adminplayerobservefollow=[REF(Leader)]'>FLW</a>"
-		else
-			dat += "<BR><b>No leader!</b>"
-		if(G.members.len)
-			dat += "<BR><b>Members:</b>"
-			for(var/mob/living/L in G.members)
-				if(L == G.leader)
-					continue
-				dat += "<BR>[L.real_name] <b>as</b> [L] [L.mob_dead_or_alive_print()] <a href='?priv_msg=[ckey(L.key)]'>PM</a> <a href='?_src_=holder;[HrefToken()];adminplayerobservefollow=[REF(L)]'>FLW</a>"
-		else
-			dat += "<BR><b>No members!</b>"
-		dat += "<br>"
-	dat += "</body></html>"
-	usr << browse(dat.Join(), "window=gangstatus;size=500x500")
-
-/mob/proc/mob_dead_or_alive_print()
-	if(stat == DEAD)
-		return "<font color=red>(DEAD)</font>"
-	else
-		return "<b>(ALIVE)</b>"

@@ -1,4 +1,5 @@
 #define PROGRESSBAR_HEIGHT 6
+#define PROGRESSBAR_ANIMATION_TIME 5
 
 /datum/progressbar
 	var/goal = 1
@@ -7,6 +8,7 @@
 	var/mob/user
 	var/client/client
 	var/listindex
+	var/last_progress = 0
 
 /datum/progressbar/New(mob/User, goal_number, atom/target)
 	. = ..()
@@ -64,4 +66,14 @@
 	qdel(bar)
 	. = ..()
 
+///Called on progress end, be it successful or a failure. Wraps up things to delete the datum and bar.
+/datum/progressbar/proc/end_progress()
+	if(last_progress != goal)
+		bar.icon_state = "[bar.icon_state]_fail"
+
+	animate(bar, alpha = 0, time = PROGRESSBAR_ANIMATION_TIME)
+
+	QDEL_IN(src, PROGRESSBAR_ANIMATION_TIME)
+
+#undef PROGRESSBAR_ANIMATION_TIME
 #undef PROGRESSBAR_HEIGHT

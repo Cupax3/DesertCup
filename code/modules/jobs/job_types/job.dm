@@ -100,7 +100,7 @@
 	return TRUE
 
 /datum/job/proc/GetAntagRep()
-	. = CONFIG_GET(keyed_number_list/antag_rep)[lowertext(title)]
+	. = CONFIG_GET(keyed_list/antag_rep)[lowertext(title)]
 	if(. == null)
 		return antag_rep
 
@@ -113,7 +113,6 @@
 		if(H.dna.species.id != "human")
 			H.set_species(/datum/species/human)
 			H.apply_pref_name("human", H.client)
-		purrbation_remove(H, silent=TRUE)
 	// F13 EDIT: GHOULS CANNOT BE LEGION
 	if((title in GLOB.legion_positions) || (title in GLOB.vault_positions) || (title in GLOB.brotherhood_positions))
 		if(H.dna.species.id == "ghoul")

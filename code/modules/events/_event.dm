@@ -115,6 +115,8 @@
 	var/current_players	= 0 //Amount of of alive, non-AFK human players on server at the time of event start
 	var/fakeable = TRUE		//Can be faked by fake news event.
 
+	var/announceChance = 100
+
 //Called first before processing.
 //Allows you to setup your event, such as randomly
 //setting the startWhen and or announceWhen variables.
@@ -202,3 +204,4 @@
 	processing = my_processing
 	SSevents.running += src
 	return ..()
+

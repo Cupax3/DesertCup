@@ -102,3 +102,7 @@
 	var/obj/item/organ/brain/B = getorganslot(ORGAN_SLOT_BRAIN)
 	if(B)
 		. = B.cure_all_traumas(resilience)
+
+///////////////////////////////// PARALYZED //////////////////////////////////
+/mob/living/proc/IsParalyzed() //If we're immobilized
+	return has_status_effect(STATUS_EFFECT_PARALYZED)

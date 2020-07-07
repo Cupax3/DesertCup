@@ -37,29 +37,35 @@
 	create_random_books(book_count, src, FALSE, category)
 	update_icon()
 
-/proc/create_random_books(amount = 2, location, fail_loud = FALSE, category = null)
+/proc/create_random_books(amount, location, fail_loud = FALSE, category = null, obj/item/book/existing_book)
 	. = list()
 	if(!isnum(amount) || amount<1)
 		return
 	if (!SSdbcore.Connect())
-		if(fail_loud || prob(5))
-			var/obj/item/paper/P = new(location)
-			P.info = "There once was a book from Nantucket<br>But the database failed us, so f*$! it.<br>I tried to be good to you<br>Now this is an I.O.U<br>If you're feeling entitled, well, stuff it!<br><br><font color='gray'>~</font>"
-			P.update_icon()
+		if(existing_book && (fail_loud || prob(5)))
+			existing_book.author = "???"
+			existing_book.title = "Strange book"
+			existing_book.name = "Strange book"
+			existing_book.dat = "There once was a book from Nantucket<br>But the database failed us, so f*$! it.<br>I tried to be good to you<br>Now this is an I.O.U<br>If you're feeling entitled, well, stuff it!<br><br><font color='gray'>~</font>"
 		return
 	if(prob(25))
 		category = null
-	var/c = category? " AND category='[sanitizeSQL(category)]'" :""
-	var/datum/DBQuery/query_get_random_books = SSdbcore.NewQuery("SELECT * FROM [format_table_name("library")] WHERE isnull(deleted)[c] GROUP BY title ORDER BY rand() LIMIT [amount];") // isdeleted copyright (c) not me
+	var/datum/db_query/query_get_random_books = SSdbcore.NewQuery({"
+		SELECT author, title, content
+		FROM [format_table_name("library")]
+		WHERE isnull(deleted) AND (:category IS NULL OR category = :category)
+		ORDER BY rand() LIMIT :limit
+	"}, list("category" = category, "limit" = amount))
 	if(query_get_random_books.Execute())
 		while(query_get_random_books.NextRow())
-			var/obj/item/book/B = new(location)
-			. += B
-			B.author	=	query_get_random_books.item[2]
-			B.title		=	query_get_random_books.item[3]
-			B.dat		=	query_get_random_books.item[4]
+			var/obj/item/book/B
+			B = existing_book ? existing_book : new(location)
+			B.author	=	query_get_random_books.item[1]
+			B.title		=	query_get_random_books.item[2]
+			B.dat		=	query_get_random_books.item[3]
 			B.name		=	"Book: [B.title]"
-			B.icon_state=	"book[rand(1,8)]"
+			if(!existing_book)
+				B.icon_state=	"book[rand(1,8)]"
 	qdel(query_get_random_books)
 
 /obj/structure/bookcase/random/fiction

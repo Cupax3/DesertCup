@@ -19,6 +19,17 @@
 	var/list/mode_false_report_weight
 
 	var/motd
+	var/policy
+
+	var/static/regex/ic_filter_regex
+
+/datum/controller/configuration/proc/admin_reload()
+	if(IsAdminAdvancedProcCall())
+		return
+	log_admin("[key_name_admin(usr)] has forcefully reloaded the configuration from disk.")
+	message_admins("[key_name_admin(usr)] has forcefully reloaded the configuration from disk.")
+	full_wipe()
+	Load(world.params[OVERRIDE_CONFIG_DIRECTORY_PARAMETER])
 
 /datum/controller/configuration/proc/Load(_directory)
 	if(_directory)
@@ -37,6 +48,16 @@
 				break
 	loadmaplist(CONFIG_MAPS_FILE)
 	LoadMOTD()
+
+/datum/controller/configuration/proc/full_wipe()
+	if(IsAdminAdvancedProcCall())
+		return
+	entries_by_type.Cut()
+	QDEL_LIST_ASSOC_VAL(entries)
+	entries = null
+	QDEL_LIST_ASSOC_VAL(maplist)
+	maplist = null
+	QDEL_NULL(defaultmap)
 
 /datum/controller/configuration/Destroy()
 	entries_by_type.Cut()
@@ -200,7 +221,7 @@
 	mode_reports = list()
 	mode_false_report_weight = list()
 	votable_modes = list()
-	var/list/probabilities = Get(/datum/config_entry/keyed_number_list/probability)
+	var/list/probabilities = Get(/datum/config_entry/keyed_list/probability)
 	for(var/T in gamemode_cache)
 		// I wish I didn't have to instance the game modes in order to look up
 		// their information, but it is the only way (at least that I know of).
@@ -296,9 +317,9 @@
 
 /datum/controller/configuration/proc/get_runnable_modes()
 	var/list/datum/game_mode/runnable_modes = new
-	var/list/probabilities = Get(/datum/config_entry/keyed_number_list/probability)
-	var/list/min_pop = Get(/datum/config_entry/keyed_number_list/min_pop)
-	var/list/max_pop = Get(/datum/config_entry/keyed_number_list/max_pop)
+	var/list/probabilities = Get(/datum/config_entry/keyed_list/probability)
+	var/list/min_pop = Get(/datum/config_entry/keyed_list/min_pop)
+	var/list/max_pop = Get(/datum/config_entry/keyed_list/max_pop)
 	var/list/repeated_mode_adjust = Get(/datum/config_entry/number_list/repeated_mode_adjust)
 	for(var/T in gamemode_cache)
 		var/datum/game_mode/M = new T()
@@ -326,9 +347,9 @@
 
 /datum/controller/configuration/proc/get_runnable_midround_modes(crew)
 	var/list/datum/game_mode/runnable_modes = new
-	var/list/probabilities = Get(/datum/config_entry/keyed_number_list/probability)
-	var/list/min_pop = Get(/datum/config_entry/keyed_number_list/min_pop)
-	var/list/max_pop = Get(/datum/config_entry/keyed_number_list/max_pop)
+	var/list/probabilities = Get(/datum/config_entry/keyed_list/probability)
+	var/list/min_pop = Get(/datum/config_entry/keyed_list/min_pop)
+	var/list/max_pop = Get(/datum/config_entry/keyed_list/max_pop)
 	for(var/T in (gamemode_cache - SSticker.mode.type))
 		var/datum/game_mode/M = new T()
 		if(!(M.config_tag in modes))

@@ -40,7 +40,7 @@
 			to_chat(src, "<span class='danger'>You cannot use LOOC (muted).</span>")
 			return
 
-	if(jobban_isbanned(src.mob, "OOC"))
+	if(is_banned_from(src.mob.ckey, "LOOC"))
 		to_chat(src, "<span class='danger'>You have been banned from LOOC.</span>")
 		return
 

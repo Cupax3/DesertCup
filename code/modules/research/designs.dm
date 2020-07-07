@@ -45,6 +45,8 @@ other types of metals and chemistry for reagents).
 	var/departmental_flags = ALL			//bitflags for deplathes.
 	var/list/datum/techweb_node/unlocked_by = list()
 	var/icon_cache
+	var/research_icon
+	var/research_icon_state
 
 /datum/design/Destroy()
 	CRASH("DESIGN DATUMS SHOULD NOT EVER BE DESTROYED AS THEY ARE ONLY MEANT TO BE IN A GLOBAL LIST AND REFERENCED FOR US.")
