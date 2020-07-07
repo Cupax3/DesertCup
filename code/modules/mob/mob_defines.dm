@@ -116,5 +116,3 @@
 	var/logout_time = 0 //for despawn and general logging
 
 	var/memory_throttle_time = 0
-
-	var/list/do_afters

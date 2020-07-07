@@ -86,8 +86,14 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/Initialize()
 	icon_state = ""
 	layer = AREA_LAYER
+	uid = ++global_uid
 	map_name = name // Save the initial (the name set in the map) name of the area.
 	canSmoothWithAreas = typecacheof(canSmoothWithAreas)
+
+	/*set block radio for turfs, so they can't cheat by buggering the area*/
+	if(flags_2 & BLOCK_RADIO_2)
+		for(var/turf/T in contents)
+			T.flags_2 |= BLOCK_RADIO_2
 
 	if(requires_power)
 		luminosity = 0
@@ -111,38 +117,27 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(!IS_DYNAMIC_LIGHTING(src))
 		add_overlay(/obj/effect/fullbright)
 
-	reg_in_areas_in_z()
+	if(contents.len)
+		var/list/areas_in_z = SSmapping.areas_in_z
+		var/z
+		update_areasize()
+		for(var/i in 1 to contents.len)
+			var/atom/thing = contents[i]
+			if(!thing)
+				continue
+			z = thing.z
+			break
+		if(!z)
+			WARNING("No z found for [src]")
+			return
+		if(!areas_in_z["[z]"])
+			areas_in_z["[z]"] = list()
+		areas_in_z["[z]"] += src
 
 	return INITIALIZE_HINT_LATELOAD
 
 /area/LateInitialize()
 	power_change()		// all machines set to current power level, also updates icon
-
-/**
-  * Register this area as belonging to a z level
-  *
-  * Ensures the item is added to the SSmapping.areas_in_z list for this z
-  */
-/area/proc/reg_in_areas_in_z()
-	if(!length(contents))
-		return
-	var/list/areas_in_z = SSmapping.areas_in_z
-	update_areasize()
-	if(!z)
-		WARNING("No z found for [src]")
-		return
-	if(!areas_in_z["[z]"])
-		areas_in_z["[z]"] = list()
-	areas_in_z["[z]"] += src
-
-/**
-  * Destroy an area and clean it up
-  *
-  * Removes the area from GLOB.areas_by_type and also stops it processing on SSobj
-  *
-  * This is despite the fact that no code appears to put it on SSobj, but
-  * who am I to argue with old coders
-  */
 
 /area/Destroy()
 	STOP_PROCESSING(SSobj, src)

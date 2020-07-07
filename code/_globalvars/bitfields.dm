@@ -51,7 +51,7 @@ GLOBAL_LIST_INIT(bitfields, list(
 		"ABSTRACT" = ABSTRACT,
 		),
 	"admin_flags" = list(
-		"BUILDMODE" = R_BUILD,
+		"BUILDMODE" = R_BUILDMODE,
 		"ADMIN" = R_ADMIN,
 		"BAN" = R_BAN,
 		"FUN" = R_FUN,
@@ -62,10 +62,11 @@ GLOBAL_LIST_INIT(bitfields, list(
 		"STEALTH" = R_STEALTH,
 		"POLL" = R_POLL,
 		"VAREDIT" = R_VAREDIT,
-		"SOUNDS" = R_SOUND,
+		"SOUNDS" = R_SOUNDS,
 		"SPAWN" = R_SPAWN,
-		"AUTOLOGIN" = R_AUTOADMIN,
-		"DBRANKS" = R_DBRANKS
+		"AUTOLOGIN" = R_AUTOLOGIN,
+		"DBRANKS" = R_DBRANKS,
+		"DJ" = R_DJ,
 		),
 	"interaction_flags_atom" = list(
 		"INTERACT_ATOM_REQUIRES_ANCHORED" = INTERACT_ATOM_REQUIRES_ANCHORED,

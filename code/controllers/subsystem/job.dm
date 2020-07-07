@@ -87,7 +87,7 @@ SUBSYSTEM_DEF(job)
 		var/datum/job/job = GetJob(rank)
 		if(!job)
 			return FALSE
-		if(is_banned_from(player.ckey, rank) || QDELETED(player))
+		if(jobban_isbanned(player, rank) || QDELETED(player))
 			return FALSE
 		if(!job.player_old_enough(player.client))
 			return FALSE
@@ -109,7 +109,7 @@ SUBSYSTEM_DEF(job)
 	Debug("Running FOC, Job: [job], Level: [level], Flag: [flag]")
 	var/list/candidates = list()
 	for(var/mob/dead/new_player/player in unassigned)
-		if(is_banned_from(player.ckey, job.title) || QDELETED(player))
+		if(jobban_isbanned(player, job.title) || QDELETED(player))
 			Debug("FOC isbanned failed, Player: [player]")
 			continue
 		if(!job.player_old_enough(player.client))
@@ -148,7 +148,7 @@ SUBSYSTEM_DEF(job)
 		if((job.title in GLOB.faction_whitelist_positions) && (CONFIG_GET(flag/use_role_whitelist))) //If you want an antagonist position, get a whitelist and choose it.
 			continue
 
-		if(is_banned_from(player.ckey, job.title) || QDELETED(player))
+		if(jobban_isbanned(player, job.title) || QDELETED(player))
 			if(QDELETED(player))
 				Debug("GRJ isbanned failed, Player deleted")
 				break
@@ -323,7 +323,7 @@ SUBSYSTEM_DEF(job)
 				if(!job)
 					continue
 
-				if(is_banned_from(player.ckey, job.title))
+				if(jobban_isbanned(player, job.title))
 					Debug("DO isbanned failed, Player: [player], Job:[job.title]")
 					continue
 
@@ -375,7 +375,7 @@ SUBSYSTEM_DEF(job)
 	if(PopcapReached())
 		RejectPlayer(player)
 	else if(player.client.prefs.joblessrole == BEOVERFLOW)
-		var/allowed_to_be_a_loser = !is_banned_from(player.ckey, SSjob.overflow_role)
+		var/allowed_to_be_a_loser = !jobban_isbanned(player, SSjob.overflow_role)
 		if(QDELETED(player) || !allowed_to_be_a_loser)
 			RejectPlayer(player)
 		else
@@ -505,7 +505,7 @@ SUBSYSTEM_DEF(job)
 		for(var/mob/dead/new_player/player in GLOB.player_list)
 			if(!(player.ready == PLAYER_READY_TO_PLAY && player.mind && !player.mind.assigned_role))
 				continue //This player is not ready
-			if(is_banned_from(player.ckey, job.title) || QDELETED(player))
+			if(jobban_isbanned(player, job.title) || QDELETED(player))
 				banned++
 				continue
 			if(!job.player_old_enough(player.client))

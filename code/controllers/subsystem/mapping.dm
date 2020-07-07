@@ -228,7 +228,7 @@ SUBSYSTEM_DEF(mapping)
 	LoadGroup(FailedZs, "Dungeons", config.map_path, "Dungeons.dmm", default_traits = ZTRAITS_DUNGEON)
 
 	if(SSdbcore.Connect())
-		var/datum/db_query/query_round_map_name = SSdbcore.NewQuery("UPDATE [format_table_name("round")] SET map_name = '[config.map_name]' WHERE id = [GLOB.round_id]")
+		var/datum/DBQuery/query_round_map_name = SSdbcore.NewQuery("UPDATE [format_table_name("round")] SET map_name = '[config.map_name]' WHERE id = [GLOB.round_id]")
 		query_round_map_name.Execute()
 		qdel(query_round_map_name)
 
@@ -499,8 +499,3 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 	unused_turfs.Cut()
 	used_turfs.Cut()
 	reserve_turfs(clearing)
-
-/datum/controller/subsystem/mapping/proc/reg_in_areas_in_z(list/areas)
-	for(var/B in areas)
-		var/area/A = B
-		A.reg_in_areas_in_z()

@@ -11,10 +11,10 @@
 	set desc = "View/retrieve logfiles for the current round."
 	set category = "Admin"
 
-	browseserverlogs(current=TRUE)
+	browseserverlogs("[GLOB.log_directory]/")
 
-/client/proc/browseserverlogs(current=FALSE)
-	var/path = browse_files(current ? BROWSE_ROOT_CURRENT_LOGS : BROWSE_ROOT_ALL_LOGS)
+/client/proc/browseserverlogs(path = "data/logs/")
+	path = browse_files(path)
 	if(!path)
 		return
 
@@ -31,5 +31,5 @@
 			src << ftp(file(path))
 		else
 			return
-	to_chat(src, "Attempting to send [path], this may take a fair few minutes if the file is very large.", confidential = TRUE)
+	to_chat(src, "Attempting to send [path], this may take a fair few minutes if the file is very large.")
 	return

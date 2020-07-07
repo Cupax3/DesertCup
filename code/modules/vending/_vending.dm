@@ -2,8 +2,6 @@
 #define CONTRABAND_CHARGE 2
 #define COIN_CHARGE 3
 
-GLOBAL_LIST_EMPTY(vending_products)
-
 /*
  * Vending machine types - Can be found under /code/modules/vending/
  */

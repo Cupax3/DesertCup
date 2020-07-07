@@ -34,8 +34,6 @@ SUBSYSTEM_DEF(ticker)
 	SCRIPTURE_SCRIPT = FALSE, \
 	SCRIPTURE_APPLICATION = FALSE) //list of clockcult scripture states for announcements
 
-	var/anonymousnames = ANON_DISABLED
-
 	var/delay_end = 0						//if set true, the round will not restart on it's own
 	var/admin_delay_notice = ""				//a message to display to anyone who tries to restart the world after a delay
 	var/ready_for_reboot = FALSE			//all roundend preparation done with, all that's left is reboot
@@ -317,6 +315,9 @@ SUBSYSTEM_DEF(ticker)
 	GLOB.start_state = new /datum/station_state()
 	GLOB.start_state.count()
 
+	var/list/adm = get_admin_counts()
+	var/list/allmins = adm["present"]
+	send2irc("Server", "Round [GLOB.round_id ? "#[GLOB.round_id]:" : "of"] [hide_mode ? "secret":"[mode.name]"] has started[allmins.len ? ".":" with no active admins online!"]")
 	setup_done = TRUE
 
 	for(var/i in GLOB.start_landmarks_list)

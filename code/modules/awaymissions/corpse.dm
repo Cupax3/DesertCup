@@ -34,7 +34,7 @@
 	if(!uses)
 		to_chat(user, "<span class='warning'>This spawner is out of charges!</span>")
 		return
-	if(is_banned_from(user.ckey, banType))
+	if(jobban_isbanned(user, banType))
 		to_chat(user, "<span class='warning'>You are jobanned!</span>")
 		return
 	if(QDELETED(src) || QDELETED(user))
@@ -164,11 +164,11 @@
 	if(hair_style)
 		H.hair_style = hair_style
 	else
-		H.hair_style = random_hairstyle(gender)
+		H.hair_style = random_hair_style(gender)
 	if(facial_hair_style)
 		H.facial_hair_style = facial_hair_style
 	else
-		H.facial_hair_style = random_facial_hairstyle(gender)
+		H.facial_hair_style = random_facial_hair_style(gender)
 	if(skin_tone)
 		H.skin_tone = skin_tone
 	else

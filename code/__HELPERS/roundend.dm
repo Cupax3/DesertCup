@@ -77,7 +77,7 @@
 	SSblackbox.record_feedback("nested tally", "round_end_stats", num_escapees, list("escapees", "total"))
 	SSblackbox.record_feedback("nested tally", "round_end_stats", GLOB.joined_player_list.len, list("players", "total"))
 	SSblackbox.record_feedback("nested tally", "round_end_stats", GLOB.joined_player_list.len - num_survivors, list("players", "dead"))
-
+	
 	var/datum/gang/largest_gang = null
 	var/mob/living/largest_leader = null
 	var/largest_gang_number = 0
@@ -111,7 +111,7 @@
 		discordmsg += "Nobody died!\n"
 	discordmsg += "--------------------------------------\n"
 	discordsendmsg("ooc", discordmsg)
-
+	
 	. = list()
 	.[POPCOUNT_SURVIVORS] = num_survivors
 	.[POPCOUNT_ESCAPEES] = num_escapees
@@ -198,6 +198,8 @@
 	set waitfor = FALSE
 
 	to_chat(world, "<BR><BR><BR><span class='big bold'>The round has ended.</span>")
+	if(LAZYLEN(GLOB.round_end_notifiees))
+		send2irc("Notice", "[GLOB.round_end_notifiees.Join(", ")] the round has ended.")
 
 	for(var/I in round_end_events)
 		var/datum/callback/cb = I
@@ -225,7 +227,9 @@
 	//Set news report and mode result
 	mode.set_round_result()
 
-	if(length(CONFIG_GET(keyed_list/cross_server)))
+	send2irc("Server", "Round just ended.")
+
+	if(length(CONFIG_GET(keyed_string_list/cross_server)))
 		send_news_report()
 
 	CHECK_TICK
@@ -566,7 +570,7 @@
 		return
 	else if(load_admins(TRUE)) //returns true if there was a database failure and the backup was loaded from
 		return
-	var/datum/db_query/query_admin_rank_update = SSdbcore.NewQuery("UPDATE [format_table_name("player")] p INNER JOIN [format_table_name("admin")] a ON p.ckey = a.ckey SET p.lastadminrank = a.rank")
+	var/datum/DBQuery/query_admin_rank_update = SSdbcore.NewQuery("UPDATE [format_table_name("player")] p INNER JOIN [format_table_name("admin")] a ON p.ckey = a.ckey SET p.lastadminrank = a.rank")
 	query_admin_rank_update.Execute()
 	qdel(query_admin_rank_update)
 
