@@ -423,10 +423,8 @@
 	lootcount = 1
 
 	loot = list(
-				/obj/item/gun/medbeam,
-				/obj/item/defibrillator/compact/combat/loaded,
-				/obj/item/reagent_containers/hypospray/combat,
-				/obj/item/clothing/glasses/hud/health/night,
+				/obj/item/defibrillator,
+				/obj/item/clothing/glasses/hud/health,
 				/obj/item/disk/surgery/revival
 				)
 
