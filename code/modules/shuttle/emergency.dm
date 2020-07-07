@@ -267,7 +267,7 @@
 	set waitfor = FALSE
 	if(!SSdbcore.Connect())
 		return
-	var/datum/db_query/query_round_shuttle_name = SSdbcore.NewQuery("UPDATE [format_table_name("round")] SET shuttle_name = '[name]' WHERE id = [GLOB.round_id]")
+	var/datum/DBQuery/query_round_shuttle_name = SSdbcore.NewQuery("UPDATE [format_table_name("round")] SET shuttle_name = '[name]' WHERE id = [GLOB.round_id]")
 	query_round_shuttle_name.Execute()
 	qdel(query_round_shuttle_name)
 
@@ -299,6 +299,7 @@
 					return
 				mode = SHUTTLE_DOCKED
 				setTimer(SSshuttle.emergencyDockTime)
+				send2irc("Server", "The train has arrived to the station.")
 				priority_announce("The train has arrived to the station. You have [timeLeft(600)] minutes to board the train.", null, 'sound/f13/quest.ogg', "Priority")
 				ShuttleDBStuff()
 

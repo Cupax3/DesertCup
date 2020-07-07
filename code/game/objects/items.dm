@@ -19,7 +19,6 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 	//Same as above but for inhands, uses the lefthand_ and righthand_ file vars
 	var/inhand_x_dimension = 32
 	var/inhand_y_dimension = 32
-	var/inhand_icon_state = null
 
 	//Not on /clothing because for some reason any /obj/item can technically be "worn" with enough fuckery.
 	var/icon/alternate_worn_icon = null//If this is set, update_icons() will find on mob (WORN, NOT INHANDS) states in this file instead, primary use: badminnery/events

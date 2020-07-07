@@ -32,7 +32,6 @@
 /datum/mind
 	var/key
 	var/name				//replaces mob/var/original_name
-	var/ghostname
 	var/mob/living/current
 	var/active = 0
 

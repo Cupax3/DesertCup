@@ -1,18 +1,18 @@
 
 ////////////////////////////////
 /proc/message_admins(msg)
-	msg = "<span class=\"admin\"><span class=\"prefix\">ADMIN LOG:</span> <span class=\"message linkify\">[msg]</span></span>"
-	to_chat(GLOB.admins, msg, confidential = TRUE)
+	msg = "<span class=\"admin\"><span class=\"prefix\">[time_stamp()] ADMIN LOG:</span> <span class=\"message\">[msg]</span></span>"
+	to_chat(GLOB.admins, msg)
 
 /proc/relay_msg_admins(msg)
-	msg = "<span class=\"admin\"><span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span></span>"
-	to_chat(GLOB.admins, msg, confidential = TRUE)
+	msg = "<span class=\"admin\"><span class=\"prefix\">[time_stamp()] RELAY:</span> <span class=\"message\">[msg]</span></span>"
+	to_chat(GLOB.admins, msg)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////Panels
 
 /datum/admins/proc/show_player_panel(mob/M in GLOB.mob_list)
-	set category = "Admin - Game"
+	set category = "Admin"
 	set name = "Show Player Panel"
 	set desc="Edit player (respawn, ban, heal, etc)"
 
@@ -22,16 +22,16 @@
 	log_admin("[key_name(usr)] checked the individual player panel for [key_name(M)][isobserver(usr)?"":" while in game"].")
 
 	if(!M)
-		to_chat(usr, "<span class='warning'>You seem to be selecting a mob that doesn't exist anymore.</span>", confidential = TRUE)
+		to_chat(usr, "You seem to be selecting a mob that doesn't exist anymore.")
 		return
 
-	var/body = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'><title>Options for [M.key]</title></head>"
+	var/body = "<html><head><title>Options for [M.key]</title></head>"
 	body += "<body>Options panel for <b>[M]</b>"
 	if(M.client)
 		body += " played by <b>[M.client]</b> "
-		body += "\[<A href='?_src_=holder;[HrefToken()];editrights=[(GLOB.admin_datums[M.client.ckey] || GLOB.deadmins[M.client.ckey]) ? "rank" : "add"];key=[M.key]'>[M.client.holder ? M.client.holder.rank : "Player"]</A>\]"
+		body += "\[<A href='?_src_=holder;[HrefToken()];editrights=[(GLOB.admin_datums[M.client.ckey] || GLOB.deadmins[M.client.ckey]) ? "rank" : "add"];ckey=[M.ckey]'>[M.client.holder ? M.client.holder.rank : "Player"]</A>\]"
 		if(CONFIG_GET(flag/use_exp_tracking))
-			body += "\[<A href='?_src_=holder;[HrefToken()];getplaytimewindow=[REF(M)]'>" + M.client.get_exp_living(FALSE) + "</a>\]"
+			body += "\[<A href='?_src_=holder;[HrefToken()];getplaytimewindow=[REF(M)]'>" + M.client.get_exp_living() + "</a>\]"
 
 	if(isnewplayer(M))
 		body += " <B>Hasn't Entered Game</B> "
@@ -50,17 +50,12 @@
 		body += "<a href='?_src_=holder;[HrefToken()];modantagrep=subtract;mob=[REF(M)]'>\[decrease\]</a> "
 		body += "<a href='?_src_=holder;[HrefToken()];modantagrep=set;mob=[REF(M)]'>\[set\]</a> "
 		body += "<a href='?_src_=holder;[HrefToken()];modantagrep=zero;mob=[REF(M)]'>\[zero\]</a>"
-		var/full_version = "Unknown"
-		if(M.client.byond_version)
-			full_version = "[M.client.byond_version].[M.client.byond_build ? M.client.byond_build : "xxx"]"
-		body += "<br>\[<b>Byond version:</b> [full_version]\]<br>"
 
 
 	body += "<br><br>\[ "
 	body += "<a href='?_src_=vars;[HrefToken()];Vars=[REF(M)]'>VV</a> - "
 	if(M.mind)
 		body += "<a href='?_src_=holder;[HrefToken()];traitor=[REF(M)]'>TP</a> - "
-		body += "<a href='?_src_=holder;[HrefToken()];skill=[REF(M)]'>SKILLS</a> - "
 	else
 		body += "<a href='?_src_=holder;[HrefToken()];initmind=[REF(M)]'>Init Mind</a> - "
 	if (iscyborg(M))
@@ -79,10 +74,22 @@
 	body += "<b>Mob type</b> = [M.type]<br><br>"
 
 	body += "<A href='?_src_=holder;[HrefToken()];boot2=[REF(M)]'>Kick</A> | "
-	if(M.client)
-		body += "<A href='?_src_=holder;[HrefToken()];newbankey=[M.key];newbanip=[M.client.address];newbancid=[M.client.computer_id]'>Ban</A> | "
+	body += "<A href='?_src_=holder;[HrefToken()];newban=[REF(M)]'>Ban</A> | "
+	body += "<A href='?_src_=holder;[HrefToken()];jobban2=[REF(M)]'>Jobban</A> | "
+	body += "<A href='?_src_=holder;[HrefToken()];appearanceban=[REF(M)]'>Identity Ban</A> | "
+	var/rm = REF(M)
+	if(jobban_isbanned(M, "OOC"))
+		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=OOC;jobban4=[rm]'><font color=red>OOCBan</font></A> | "
 	else
-		body += "<A href='?_src_=holder;[HrefToken()];newbankey=[M.key]'>Ban</A> | "
+		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=OOC;jobban4=[rm]'>OOCBan</A> | "
+	if(QDELETED(M) || QDELETED(usr))
+		return
+	if(jobban_isbanned(M, "emote"))
+		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=emote;jobban4=[rm]'><font color=red>EmoteBan</font></A> | "
+	else
+		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=emote;jobban4=[rm]'>Emoteban</A> | "
+	if(QDELETED(M) || QDELETED(usr))
+		return
 
 	body += "<A href='?_src_=holder;[HrefToken()];showmessageckey=[M.ckey]'>Notes | Messages | Watchlist</A> | "
 	if(M.client)
@@ -106,7 +113,6 @@
 	body += "<A href='?_src_=holder;[HrefToken()];traitor=[REF(M)]'>Traitor panel</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];narrateto=[REF(M)]'>Narrate to</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];subtlemessage=[REF(M)]'>Subtle message</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];playsoundto=[REF(M)]'>Play sound to</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];languagemenu=[REF(M)]'>Language Menu</A>"
 
 	if (M.client)
@@ -184,7 +190,6 @@
 		body += "<A href='?_src_=holder;[HrefToken()];tdome2=[REF(M)]'>Thunderdome 2</A> | "
 		body += "<A href='?_src_=holder;[HrefToken()];tdomeadmin=[REF(M)]'>Thunderdome Admin</A> | "
 		body += "<A href='?_src_=holder;[HrefToken()];tdomeobserve=[REF(M)]'>Thunderdome Observer</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];admincommend=[REF(M)]'>Commend Behavior</A> | "
 
 	body += "<br>"
 	body += "</body></html>"
@@ -194,14 +199,14 @@
 
 
 /datum/admins/proc/access_news_network() //MARKER
-	set category = "Admin - Events"
+	set category = "Fun"
 	set name = "Access Newscaster Network"
 	set desc = "Allows you to view, add and edit news feeds."
 
 	if (!istype(src, /datum/admins))
 		src = usr.client.holder
 	if (!istype(src, /datum/admins))
-		to_chat(usr, "Error: you are not an admin!", confidential = TRUE)
+		to_chat(usr, "Error: you are not an admin!")
 		return
 	var/dat
 	dat = text("<HEAD><TITLE>Admin Newscaster</TITLE></HEAD><H3>Admin Newscaster Unit</H3>")
@@ -223,11 +228,11 @@
 			dat+="<HR><B>Feed Security functions:</B><BR>"
 			dat+="<BR><A href='?src=[REF(src)];[HrefToken()];ac_menu_wanted=1'>[(wanted_already) ? ("Manage") : ("Publish")] \"Wanted\" Issue</A>"
 			dat+="<BR><A href='?src=[REF(src)];[HrefToken()];ac_menu_censor_story=1'>Censor Feed Stories</A>"
-			dat+="<BR><A href='?src=[REF(src)];[HrefToken()];ac_menu_censor_channel=1'>Mark Feed Channel with Nanotrasen D-Notice (disables and locks the channel).</A>"
+			dat+="<BR><A href='?src=[REF(src)];[HrefToken()];ac_menu_censor_channel=1'>Mark Feed Channel with D-Notice (disables and locks the channel).</A>"
 			dat+="<BR><HR><A href='?src=[REF(src)];[HrefToken()];ac_set_signature=1'>The newscaster recognises you as:<BR> <FONT COLOR='green'>[src.admin_signature]</FONT></A>"
 		if(1)
 			dat+= "Station Feed Channels<HR>"
-			if( !length(GLOB.news_network.network_channels) )
+			if( isemptylist(GLOB.news_network.network_channels) )
 				dat+="<I>No active channels found...</I>"
 			else
 				for(var/datum/newscaster/feed_channel/CHANNEL in GLOB.news_network.network_channels)
@@ -277,10 +282,10 @@
 		if(9)
 			dat+="<B>[admincaster_feed_channel.channel_name]: </B><FONT SIZE=1>\[created by: <FONT COLOR='maroon'>[admincaster_feed_channel.returnAuthor(-1)]</FONT>\]</FONT><HR>"
 			if(src.admincaster_feed_channel.censored)
-				dat+="<FONT COLOR='red'><B>ATTENTION: </B></FONT>This channel has been deemed as threatening to the welfare of the station, and marked with a Nanotrasen D-Notice.<BR>"
+				dat+="<FONT COLOR='red'><B>ATTENTION: </B></FONT>This channel has been deemed as threatening to the welfare of the station, and marked with a D-Notice.<BR>"
 				dat+="No further feed story additions are allowed while the D-Notice is in effect.</FONT><BR><BR>"
 			else
-				if( !length(src.admincaster_feed_channel.messages) )
+				if( isemptylist(src.admincaster_feed_channel.messages) )
 					dat+="<I>No feed messages found in channel...</I><BR>"
 				else
 					var/i = 0
@@ -298,22 +303,22 @@
 			dat+="<BR><HR><A href='?src=[REF(src)];[HrefToken()];ac_refresh=1'>Refresh</A>"
 			dat+="<BR><A href='?src=[REF(src)];[HrefToken()];ac_setScreen=[1]'>Back</A>"
 		if(10)
-			dat+="<B>Nanotrasen Feed Censorship Tool</B><BR>"
+			dat+="<B>Feed Censorship Tool</B><BR>"
 			dat+="<FONT SIZE=1>NOTE: Due to the nature of news Feeds, total deletion of a Feed Story is not possible.<BR>"
 			dat+="Keep in mind that users attempting to view a censored feed will instead see the \[REDACTED\] tag above it.</FONT>"
 			dat+="<HR>Select Feed channel to get Stories from:<BR>"
-			if(!length(GLOB.news_network.network_channels))
+			if(isemptylist(GLOB.news_network.network_channels))
 				dat+="<I>No feed channels found active...</I><BR>"
 			else
 				for(var/datum/newscaster/feed_channel/CHANNEL in GLOB.news_network.network_channels)
 					dat+="<A href='?src=[REF(src)];[HrefToken()];ac_pick_censor_channel=[REF(CHANNEL)]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : ""]<BR>"
 			dat+="<BR><A href='?src=[REF(src)];[HrefToken()];ac_setScreen=[0]'>Cancel</A>"
 		if(11)
-			dat+="<B>Nanotrasen D-Notice Handler</B><HR>"
+			dat+="<B>D-Notice Handler</B><HR>"
 			dat+="<FONT SIZE=1>A D-Notice is to be bestowed upon the channel if the handling Authority deems it as harmful for the station's"
 			dat+="morale, integrity or disciplinary behaviour. A D-Notice will render a channel unable to be updated by anyone, without deleting any feed"
 			dat+="stories it might contain at the time. You can lift a D-Notice if you have the required access at any time.</FONT><HR>"
-			if(!length(GLOB.news_network.network_channels))
+			if(isemptylist(GLOB.news_network.network_channels))
 				dat+="<I>No feed channels found active...</I><BR>"
 			else
 				for(var/datum/newscaster/feed_channel/CHANNEL in GLOB.news_network.network_channels)
@@ -324,7 +329,7 @@
 			dat+="<B>[src.admincaster_feed_channel.channel_name]: </B><FONT SIZE=1>\[ created by: <FONT COLOR='maroon'>[src.admincaster_feed_channel.returnAuthor(-1)]</FONT> \]</FONT><BR>"
 			dat+="<FONT SIZE=2><A href='?src=[REF(src)];[HrefToken()];ac_censor_channel_author=[REF(src.admincaster_feed_channel)]'>[(src.admincaster_feed_channel.authorCensor) ? ("Undo Author censorship") : ("Censor channel Author")]</A></FONT><HR>"
 
-			if( !length(src.admincaster_feed_channel.messages) )
+			if( isemptylist(src.admincaster_feed_channel.messages) )
 				dat+="<I>No feed messages found in channel...</I><BR>"
 			else
 				for(var/datum/newscaster/feed_message/MESSAGE in src.admincaster_feed_channel.messages)
@@ -338,10 +343,10 @@
 			dat+="<B>[src.admincaster_feed_channel.channel_name]: </B><FONT SIZE=1>\[ created by: <FONT COLOR='maroon'>[src.admincaster_feed_channel.returnAuthor(-1)]</FONT> \]</FONT><BR>"
 			dat+="Channel messages listed below. If you deem them dangerous to the station, you can <A href='?src=[REF(src)];[HrefToken()];ac_toggle_d_notice=[REF(src.admincaster_feed_channel)]'>Bestow a D-Notice upon the channel</A>.<HR>"
 			if(src.admincaster_feed_channel.censored)
-				dat+="<FONT COLOR='red'><B>ATTENTION: </B></FONT>This channel has been deemed as threatening to the welfare of the station, and marked with a Nanotrasen D-Notice.<BR>"
+				dat+="<FONT COLOR='red'><B>ATTENTION: </B></FONT>This channel has been deemed as threatening to the welfare of the station, and marked with a D-Notice.<BR>"
 				dat+="No further feed story additions are allowed while the D-Notice is in effect.</FONT><BR><BR>"
 			else
-				if( !length(src.admincaster_feed_channel.messages) )
+				if( isemptylist(src.admincaster_feed_channel.messages) )
 					dat+="<I>No feed messages found in channel...</I><BR>"
 				else
 					for(var/datum/newscaster/feed_message/MESSAGE in src.admincaster_feed_channel.messages)
@@ -411,8 +416,7 @@
 		"}
 	if(GLOB.master_mode == "secret")
 		dat += "<A href='?src=[REF(src)];[HrefToken()];f_secret=1'>(Force Secret Mode)</A><br>"
-	if(SSticker.IsRoundInProgress())
-		dat += "<a href='?src=[REF(src)];[HrefToken()];gamemode_panel=1'>(Game Mode Panel)</a><BR>"
+
 	dat += {"
 		<BR>
 		<A href='?src=[REF(src)];[HrefToken()];create_object=1'>Create Object</A><br>
@@ -424,7 +428,7 @@
 	if(marked_datum && istype(marked_datum, /atom))
 		dat += "<A href='?src=[REF(src)];[HrefToken()];dupe_marked_datum=1'>Duplicate Marked Datum</A><br>"
 
-	usr << browse(dat, "window=admin2;size=240x280")
+	usr << browse(dat, "window=admin2;size=210x200")
 	return
 
 /////////////////////////////////////////////////////////////////////////////////////////////////admins2.dm merge
@@ -438,42 +442,33 @@
 	if (!usr.client.holder)
 		return
 
-	var/localhost_addresses = list("127.0.0.1", "::1")
-	var/list/options = list("Regular Restart", "Regular Restart (with delay)", "Hard Restart (No Delay/Feeback Reason)", "Hardest Restart (No actions, just reboot)")
+	var/list/options = list("Regular Restart", "Hard Restart (No Delay/Feeback Reason)", "Hardest Restart (No actions, just reboot)")
 	if(world.TgsAvailable())
 		options += "Server Restart (Kill and restart DD)";
 
+	var/rebootconfirm
 	if(SSticker.admin_delay_notice)
-		if(alert(usr, "Are you sure? An admin has already delayed the round end for the following reason: [SSticker.admin_delay_notice]", "Confirmation", "Yes", "No") != "Yes")
-			return FALSE
-
-	var/result = input(usr, "Select reboot method", "World Reboot", options[1]) as null|anything in options
-	if(result)
-		SSblackbox.record_feedback("tally", "admin_verb", 1, "Reboot World") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-		var/init_by = "Initiated by [usr.client.holder.fakekey ? "Admin" : usr.key]."
-		switch(result)
-			if("Regular Restart")
-				if(!(isnull(usr.client.address) || (usr.client.address in localhost_addresses)))
-					if(alert("Are you sure you want to restart the server?","This server is live","Restart","Cancel") != "Restart")
-						return FALSE
-				SSticker.Reboot(init_by, "admin reboot - by [usr.key] [usr.client.holder.fakekey ? "(stealth)" : ""]", 10)
-			if("Regular Restart (with delay)")
-				var/delay = input("What delay should the restart have (in seconds)?", "Restart Delay", 5) as num|null
-				if(!delay)
-					return FALSE
-				if(!(isnull(usr.client.address) || (usr.client.address in localhost_addresses)))
-					if(alert("Are you sure you want to restart the server?","This server is live","Restart","Cancel") != "Restart")
-						return FALSE
-				SSticker.Reboot(init_by, "admin reboot - by [usr.key] [usr.client.holder.fakekey ? "(stealth)" : ""]", delay * 10)
-			if("Hard Restart (No Delay, No Feeback Reason)")
-				to_chat(world, "World reboot - [init_by]")
-				world.Reboot()
-			if("Hardest Restart (No actions, just reboot)")
-				to_chat(world, "Hard world reboot - [init_by]")
-				world.Reboot(fast_track = TRUE)
-			if("Server Restart (Kill and restart DD)")
-				to_chat(world, "Server restart - [init_by]")
-				world.TgsEndProcess()
+		if(alert(usr, "Are you sure? An admin has already delayed the round end for the following reason: [SSticker.admin_delay_notice]", "Confirmation", "Yes", "No") == "Yes")
+			rebootconfirm = TRUE
+	else
+		rebootconfirm = TRUE
+	if(rebootconfirm)
+		var/result = input(usr, "Select reboot method", "World Reboot", options[1]) as null|anything in options
+		if(result)
+			SSblackbox.record_feedback("tally", "admin_verb", 1, "Reboot World") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+			var/init_by = "Initiated by [usr.client.holder.fakekey ? "Admin" : usr.key]."
+			switch(result)
+				if("Regular Restart")
+					SSticker.Reboot(init_by, "admin reboot - by [usr.key] [usr.client.holder.fakekey ? "(stealth)" : ""]", 10)
+				if("Hard Restart (No Delay, No Feeback Reason)")
+					to_chat(world, "World reboot - [init_by]")
+					world.Reboot()
+				if("Hardest Restart (No actions, just reboot)")
+					to_chat(world, "Hard world reboot - [init_by]")
+					world.Reboot(fast_track = TRUE)
+				if("Server Restart (Kill and restart DD)")
+					to_chat(world, "Server restart - [init_by]")
+					world.TgsEndProcess()
 
 /datum/admins/proc/end_round()
 	set category = "Server"
@@ -491,7 +486,7 @@
 
 
 /datum/admins/proc/announce()
-	set category = "Admin"
+	set category = "Special Verbs"
 	set name = "Announce"
 	set desc="Announce your desires to the world"
 	if(!check_rights(0))
@@ -501,12 +496,12 @@
 	if(message)
 		if(!check_rights(R_SERVER,0))
 			message = adminscrub(message,500)
-		to_chat(world, "<span class='adminnotice'><b>[usr.client.holder.fakekey ? "Administrator" : usr.key] Announces:</b></span>\n \t [message]", confidential = TRUE)
+		to_chat(world, "<span class='adminnotice'><b>[usr.client.holder.fakekey ? "Administrator" : usr.key] Announces:</b></span>\n \t [message]")
 		log_admin("Announce: [key_name(usr)] : [message]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Announce") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/set_admin_notice()
-	set category = "Server"
+	set category = "Special Verbs"
 	set name = "Set Admin Notice"
 	set desc ="Set an announcement that appears to everyone who joins the server. Only lasts this round"
 	if(!check_rights(0))
@@ -523,7 +518,7 @@
 	else
 		message_admins("[key_name(usr)] set the admin notice.")
 		log_admin("[key_name(usr)] set the admin notice:\n[new_admin_notice]")
-		to_chat(world, "<span class='adminnotice'><b>Admin Notice:</b>\n \t [new_admin_notice]</span>", confidential = TRUE)
+		to_chat(world, "<span class ='adminnotice'><b>Admin Notice:</b>\n \t [new_admin_notice]</span>")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Admin Notice") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	GLOB.admin_notice = new_admin_notice
 	return
@@ -547,34 +542,53 @@
 	message_admins("[key_name_admin(usr)] toggled Dead OOC.")
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Dead OOC", "[GLOB.dooc_allowed ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/datum/admins/proc/togglelooc()
+	set category = "Server"
+	set desc = "can you even see verb descriptions anywhere?"
+	set name = "Toggle LOOC"
+	toggle_looc()
+	log_admin("[key_name(usr)] toggled LOOC.")
+	message_admins("[key_name_admin(usr)] toggled LOOC.")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle LOOC", "[GLOB.looc_allowed ? "Enabled" : "Disabled"]"))
+
+/datum/admins/proc/toggleloocdead()
+	set category = "Server"
+	set desc = "seriously, why do we even bother"
+	set name = "Toggle Dead LOOC"
+	toggle_dlooc()
+	log_admin("[key_name(usr)] toggled Dead LOOC.")
+	message_admins("[key_name_admin(usr)] toggled Dead LOOC.")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Dead LOOC", "[GLOB.dlooc_allowed ? "Enabled" : "Disabled"]"))
+
+/datum/admins/proc/toggledsay()
+	set category = "Server"
+	set desc="Toggle Salt Chat"
+	set name="Toggle Deadchat"
+	toggle_dsay()
+
+	log_admin("[key_name(usr)] toggled Deadchat.")
+	message_admins("[key_name_admin(usr)] toggled Deadchat.")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Deadchat", "[GLOB.dsay_allowed ? "Enabled" : "Disabled"]"))
+
 /datum/admins/proc/startnow()
 	set category = "Server"
 	set desc="Start the round RIGHT NOW"
 	set name="Start Now"
 	if(SSticker.current_state == GAME_STATE_PREGAME || SSticker.current_state == GAME_STATE_STARTUP)
-		if(!SSticker.start_immediately)
-			var/localhost_addresses = list("127.0.0.1", "::1")
-			if(!(isnull(usr.client.address) || (usr.client.address in localhost_addresses)))
-				if(alert("Are you sure you want to start the round?","Start Now","Start Now","Cancel") != "Start Now")
-					return FALSE
-			SSticker.start_immediately = TRUE
-			log_admin("[usr.key] has started the game.")
-			var/msg = ""
-			if(SSticker.current_state == GAME_STATE_STARTUP)
-				msg = " (The server is still setting up, but the round will be \
-					started as soon as possible.)"
-			message_admins("<font color='blue'>[usr.key] has started the game.[msg]</font>")
-			SSblackbox.record_feedback("tally", "admin_verb", 1, "Start Now") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-			return TRUE
-		SSticker.start_immediately = FALSE
-		SSticker.SetTimeLeft(1800)
-		to_chat(world, "<b>The game will start in 180 seconds.</b>")
-		SEND_SOUND(world, sound('sound/ai/attention.ogg'))
-		message_admins("<font color='blue'>[usr.key] has cancelled immediate game start. Game will start in 180 seconds.</font>")
-		log_admin("[usr.key] has cancelled immediate game start.")
+		SSticker.start_immediately = TRUE
+		log_admin("[usr.key] has started the game.")
+		var/msg = ""
+		if(SSticker.current_state == GAME_STATE_STARTUP)
+			msg = " (The server is still setting up, but the round will be \
+				started as soon as possible.)"
+		message_admins("<font color='blue'>\
+			[usr.key] has started the game.[msg]</font>")
+		SSblackbox.record_feedback("tally", "admin_verb", 1, "Start Now") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+		return 1
 	else
 		to_chat(usr, "<font color='red'>Error: Start Now: Game has already started.</font>")
-	return FALSE
+
+	return 0
 
 /datum/admins/proc/toggleenter()
 	set category = "Server"
@@ -582,9 +596,9 @@
 	set name="Toggle Entering"
 	GLOB.enter_allowed = !( GLOB.enter_allowed )
 	if (!( GLOB.enter_allowed ))
-		to_chat(world, "<B>New players may no longer enter the game.</B>", confidential = TRUE)
+		to_chat(world, "<B>New players may no longer enter the game.</B>")
 	else
-		to_chat(world, "<B>New players may now enter the game.</B>", confidential = TRUE)
+		to_chat(world, "<B>New players may now enter the game.</B>")
 	log_admin("[key_name(usr)] toggled new player game entering.")
 	message_admins("<span class='adminnotice'>[key_name_admin(usr)] toggled new player game entering.</span>")
 	world.update_status()
@@ -597,9 +611,9 @@
 	var/alai = CONFIG_GET(flag/allow_ai)
 	CONFIG_SET(flag/allow_ai, !alai)
 	if (alai)
-		to_chat(world, "<B>The AI job is no longer chooseable.</B>", confidential = TRUE)
+		to_chat(world, "<B>The AI job is no longer chooseable.</B>")
 	else
-		to_chat(world, "<B>The AI job is chooseable now.</B>", confidential = TRUE)
+		to_chat(world, "<B>The AI job is chooseable now.</B>")
 	log_admin("[key_name(usr)] toggled AI allowed.")
 	world.update_status()
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle AI", "[!alai ? "Disabled" : "Enabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -611,9 +625,9 @@
 	var/new_nores = !CONFIG_GET(flag/norespawn)
 	CONFIG_SET(flag/norespawn, new_nores)
 	if (!new_nores)
-		to_chat(world, "<B>You may now respawn.</B>", confidential = TRUE)
+		to_chat(world, "<B>You may now respawn.</B>")
 	else
-		to_chat(world, "<B>You may no longer respawn :(</B>", confidential = TRUE)
+		to_chat(world, "<B>You may no longer respawn :(</B>")
 	message_admins("<span class='adminnotice'>[key_name_admin(usr)] toggled respawn to [!new_nores ? "On" : "Off"].</span>")
 	log_admin("[key_name(usr)] toggled respawn to [!new_nores ? "On" : "Off"].")
 	world.update_status()
@@ -622,7 +636,7 @@
 /datum/admins/proc/delay()
 	set category = "Server"
 	set desc="Delay the game start"
-	set name="Delay Pre-Game"
+	set name="Delay pre-game"
 
 	var/newtime = input("Set a new time in seconds. Set -1 for indefinite delay.","Set Delay",round(SSticker.GetTimeLeft()/10)) as num|null
 	if(SSticker.current_state > GAME_STATE_PREGAME)
@@ -630,12 +644,11 @@
 	if(newtime)
 		newtime = newtime*10
 		SSticker.SetTimeLeft(newtime)
-		SSticker.start_immediately = FALSE
 		if(newtime < 0)
-			to_chat(world, "<b>The game start has been delayed.</b>", confidential = TRUE)
+			to_chat(world, "<b>The game start has been delayed.</b>")
 			log_admin("[key_name(usr)] delayed the round start.")
 		else
-			to_chat(world, "<b>The game will start in [DisplayTimeText(newtime)].</b>", confidential = TRUE)
+			to_chat(world, "<b>The game will start in [DisplayTimeText(newtime)].</b>")
 			SEND_SOUND(world, sound('sound/ai/attention.ogg'))
 			log_admin("[key_name(usr)] set the pre-game delay to [DisplayTimeText(newtime)].")
 		SSblackbox.record_feedback("tally", "admin_verb", 1, "Delay Game Start") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -658,28 +671,20 @@
 	set desc = "(atom path) Spawn an atom"
 	set name = "Spawn"
 
-	if(!check_rights(R_SPAWN) || !object)
+	if(!check_rights(R_SPAWN))
 		return
 
-	var/list/preparsed = splittext(object,":")
-	var/path = preparsed[1]
-	var/amount = 1
-	if(preparsed.len > 1)
-		amount = clamp(text2num(preparsed[2]),1,ADMIN_SPAWN_CAP)
-
-	var/chosen = pick_closest_path(path)
+	var/chosen = pick_closest_path(object)
 	if(!chosen)
 		return
-	var/turf/T = get_turf(usr)
-
 	if(ispath(chosen, /turf))
+		var/turf/T = get_turf(usr.loc)
 		T.ChangeTurf(chosen)
 	else
-		for(var/i in 1 to amount)
-			var/atom/A = new chosen(T)
-			A.flags_1 |= ADMIN_SPAWNED_1
+		var/atom/A = new chosen(usr.loc)
+		A.flags_1 |= ADMIN_SPAWNED_1
 
-	log_admin("[key_name(usr)] spawned [amount] x [chosen] at [AREACOORD(usr)]")
+	log_admin("[key_name(usr)] spawned [chosen] at [AREACOORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Atom") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/spawn_cargo(object as text)
@@ -700,19 +705,25 @@
 	log_admin("[key_name(usr)] spawned cargo pack [chosen] at [AREACOORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Cargo") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
-/datum/admins/proc/show_traitor_panel(mob/target_mob in GLOB.mob_list)
-	set category = "Admin - Game"
+
+/datum/admins/proc/show_traitor_panel(mob/M in GLOB.mob_list)
+	set category = "Admin"
 	set desc = "Edit mobs's memory and role"
 	set name = "Show Traitor Panel"
-	var/datum/mind/target_mind = target_mob.mind
-	if(!target_mind)
-		to_chat(usr, "This mob has no mind!", confidential = TRUE)
+
+	if(!check_rights(R_FUN))
 		return
-	if(!istype(target_mob) && !istype(target_mind))
-		to_chat(usr, "This can only be used on instances of type /mob and /mind", confidential = TRUE)
+
+	if(!istype(M))
+		to_chat(usr, "This can only be used on instances of type /mob")
 		return
-	target_mind.traitor_panel()
+	if(!M.mind)
+		to_chat(usr, "This mob has no mind!")
+		return
+
+	M.mind.traitor_panel()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Traitor Panel") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
 
 /datum/admins/proc/toggletintedweldhelmets()
 	set category = "Debug"
@@ -720,9 +731,9 @@
 	set name="Toggle tinted welding helmes"
 	GLOB.tinted_weldhelh = !( GLOB.tinted_weldhelh )
 	if (GLOB.tinted_weldhelh)
-		to_chat(world, "<B>The tinted_weldhelh has been enabled!</B>", confidential = TRUE)
+		to_chat(world, "<B>The tinted_weldhelh has been enabled!</B>")
 	else
-		to_chat(world, "<B>The tinted_weldhelh has been disabled!</B>", confidential = TRUE)
+		to_chat(world, "<B>The tinted_weldhelh has been disabled!</B>")
 	log_admin("[key_name(usr)] toggled tinted_weldhelh.")
 	message_admins("[key_name_admin(usr)] toggled tinted_weldhelh.")
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Tinted Welding Helmets", "[GLOB.tinted_weldhelh ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -734,9 +745,9 @@
 	var/new_guest_ban = !CONFIG_GET(flag/guest_ban)
 	CONFIG_SET(flag/guest_ban, new_guest_ban)
 	if (new_guest_ban)
-		to_chat(world, "<B>Guests may no longer enter the game.</B>", confidential = TRUE)
+		to_chat(world, "<B>Guests may no longer enter the game.</B>")
 	else
-		to_chat(world, "<B>Guests may now enter the game.</B>", confidential = TRUE)
+		to_chat(world, "<B>Guests may now enter the game.</B>")
 	log_admin("[key_name(usr)] toggled guests game entering [!new_guest_ban ? "" : "dis"]allowed.")
 	message_admins("<span class='adminnotice'>[key_name_admin(usr)] toggled guests game entering [!new_guest_ban ? "" : "dis"]allowed.</span>")
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Guests", "[!new_guest_ban ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -747,37 +758,37 @@
 		var/mob/living/silicon/S = i
 		ai_number++
 		if(isAI(S))
-			to_chat(usr, "<b>AI [key_name(S, usr)]'s laws:</b>", confidential = TRUE)
+			to_chat(usr, "<b>AI [key_name(S, usr)]'s laws:</b>")
 		else if(iscyborg(S))
 			var/mob/living/silicon/robot/R = S
-			to_chat(usr, "<b>CYBORG [key_name(S, usr)] [R.connected_ai?"(Slaved to: [key_name(R.connected_ai)])":"(Independent)"]: laws:</b>", confidential = TRUE)
+			to_chat(usr, "<b>CYBORG [key_name(S, usr)] [R.connected_ai?"(Slaved to: [key_name(R.connected_ai)])":"(Independent)"]: laws:</b>")
 		else if (ispAI(S))
-			to_chat(usr, "<b>pAI [key_name(S, usr)]'s laws:</b>", confidential = TRUE)
+			to_chat(usr, "<b>pAI [key_name(S, usr)]'s laws:</b>")
 		else
-			to_chat(usr, "<b>SOMETHING SILICON [key_name(S, usr)]'s laws:</b>", confidential = TRUE)
+			to_chat(usr, "<b>SOMETHING SILICON [key_name(S, usr)]'s laws:</b>")
 
 		if (S.laws == null)
-			to_chat(usr, "[key_name(S, usr)]'s laws are null?? Contact a coder.", confidential = TRUE)
+			to_chat(usr, "[key_name(S, usr)]'s laws are null?? Contact a coder.")
 		else
 			S.laws.show_laws(usr)
 	if(!ai_number)
-		to_chat(usr, "<b>No AIs located</b>" , confidential = TRUE)
+		to_chat(usr, "<b>No AIs located</b>" )
 
 /datum/admins/proc/output_all_devil_info()
 	var/devil_number = 0
 	for(var/datum/mind/D in SSticker.mode.devils)
 		devil_number++
 		var/datum/antagonist/devil/devil = D.has_antag_datum(/datum/antagonist/devil)
-		to_chat(usr, "Devil #[devil_number]:<br><br>" + devil.printdevilinfo(), confidential = TRUE)
+		to_chat(usr, "Devil #[devil_number]:<br><br>" + devil.printdevilinfo())
 	if(!devil_number)
-		to_chat(usr, "<b>No Devils located</b>" , confidential = TRUE)
+		to_chat(usr, "<b>No Devils located</b>" )
 
 /datum/admins/proc/output_devil_info(mob/living/M)
 	if(is_devil(M))
 		var/datum/antagonist/devil/devil = M.mind.has_antag_datum(/datum/antagonist/devil)
-		to_chat(usr, devil.printdevilinfo(), confidential = TRUE)
+		to_chat(usr, devil.printdevilinfo())
 	else
-		to_chat(usr, "<b>[M] is not a devil.", confidential = TRUE)
+		to_chat(usr, "<b>[M] is not a devil.")
 
 /datum/admins/proc/manage_free_slots()
 	if(!check_rights())
@@ -842,21 +853,21 @@
 			if(kick_only_afk && !C.is_afk()) //Ignore clients who are not afk
 				continue
 			if(message)
-				to_chat(C, message, confidential = TRUE)
-			kicked_client_names.Add("[C.key]")
+				to_chat(C, message)
+			kicked_client_names.Add("[C.ckey]")
 			qdel(C)
 	return kicked_client_names
 
-//returns TRUE to let the dragdrop code know we are trapping this event
-//returns FALSE if we don't plan to trap the event
+//returns 1 to let the dragdrop code know we are trapping this event
+//returns 0 if we don't plan to trap the event
 /datum/admins/proc/cmd_ghost_drag(mob/dead/observer/frommob, mob/tomob)
 
 	//this is the exact two check rights checks required to edit a ckey with vv.
 	if (!check_rights(R_VAREDIT,0) || !check_rights(R_SPAWN|R_DEBUG,0))
-		return FALSE
+		return 0
 
 	if (!frommob.ckey)
-		return FALSE
+		return 0
 
 	var/question = ""
 	if (tomob.ckey)
@@ -865,27 +876,21 @@
 
 	var/ask = alert(question, "Place ghost in control of mob?", "Yes", "No")
 	if (ask != "Yes")
-		return TRUE
+		return 1
 
 	if (!frommob || !tomob) //make sure the mobs don't go away while we waited for a response
-		return TRUE
+		return 1
 
-	// Disassociates observer mind from the body mind
-	if(tomob.client)
-		tomob.ghostize(FALSE)
-	else
-		for(var/mob/dead/observer/ghost in GLOB.dead_mob_list)
-			if(tomob.mind == ghost.mind)
-				ghost.mind = null
+	tomob.ghostize(0)
 
-	message_admins("<span class='adminnotice'>[key_name_admin(usr)] has put [frommob.key] in control of [tomob.name].</span>")
-	log_admin("[key_name(usr)] stuffed [frommob.key] into [tomob.name].")
+	message_admins("<span class='adminnotice'>[key_name_admin(usr)] has put [frommob.ckey] in control of [tomob.name].</span>")
+	log_admin("[key_name(usr)] stuffed [frommob.ckey] into [tomob.name].")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Ghost Drag Control")
 
 	tomob.ckey = frommob.ckey
 	qdel(frommob)
 
-	return TRUE
+	return 1
 
 /client/proc/adminGreet(logout)
 	if(SSticker.HasRoundStarted())

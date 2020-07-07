@@ -1,5 +1,3 @@
-#define TRAIT_STATUS_EFFECT(effect_id) "[effect_id]-trait"
-
 //Largely negative status effects go here, even if they have small benificial effects
 //STUN EFFECTS
 /datum/status_effect/incapacitating
@@ -521,16 +519,3 @@
 	desc = "Your body is covered in blue ichor! You can't be revived by vitality matrices."
 	icon_state = "ichorial_stain"
 	alerttooltipstyle = "clockcult"
-
-/datum/status_effect/incapacitating/paralyzed
-	id = "paralyzed"
-
-/datum/status_effect/incapacitating/paralyzed/on_apply()
-	. = ..()
-	if(!.)
-		return
-	ADD_TRAIT(owner, TRAIT_INCAPACITATED, TRAIT_STATUS_EFFECT(id))
-
-/datum/status_effect/incapacitating/paralyzed/on_remove()
-	REMOVE_TRAIT(owner, TRAIT_INCAPACITATED, TRAIT_STATUS_EFFECT(id))
-	return ..()

@@ -19,8 +19,6 @@
 	///Next tick to reset the total message counter
 	var/total_count_reset = 0
 	var/ircreplyamount = 0
-	var/externalreplyamount = 0
-	var/ban_cache = null
 
 		/////////
 		//OTHER//
@@ -29,10 +27,6 @@
 	var/move_delay		= 1
 
 	var/area			= null
-
-        /// Messages currently seen by this client
-	var/list/seen_messages
-	var/datum/view_data/view_size
 
 		///////////////
 		//SOUND STUFF//
@@ -89,12 +83,5 @@
 	var/next_keysend_trip_reset = 0
 	var/keysend_tripped = FALSE
 
-	// List of all asset filenames sent to this client by the asset cache, along with their assoicated md5s
-	var/list/sent_assets = list()
-	/// List of all completed blocking send jobs awaiting acknowledgement by send_asset
-	var/list/completed_asset_jobs = list()
-	/// Last asset send job id.
-	var/last_asset_job = 0
-	var/last_completed_asset_job = 0
-
-	var/list/movement_keys = list()
+	/// Messages currently seen by this client
+	var/list/seen_messages

@@ -1,50 +1,24 @@
+
 	//The mob should have a gender you want before running this proc. Will run fine without H
-/datum/preferences/proc/random_character(gender_override, antag_override = FALSE)
-	if(randomise[RANDOM_SPECIES])
-		random_species()
-	else if(randomise[RANDOM_NAME])
-		real_name = pref_species.random_name(gender,1)
-	if(gender_override && !(randomise[RANDOM_GENDER] || randomise[RANDOM_GENDER_ANTAG] && antag_override))
+/datum/preferences/proc/random_character(gender_override)
+	if(gender_override)
 		gender = gender_override
 	else
-		gender = pick(MALE,FEMALE,PLURAL)
-	if(randomise[RANDOM_AGE] || randomise[RANDOM_AGE_ANTAG] && antag_override)
-		age = rand(AGE_MIN,AGE_MAX)
-	if(randomise[RANDOM_UNDERWEAR])
-		underwear = random_underwear(gender)
-	if(randomise[RANDOM_UNDERWEAR_COLOR])
-		underwear_color = random_short_color()
-	if(randomise[RANDOM_UNDERSHIRT])
-		undershirt = random_undershirt(gender)
-	if(randomise[RANDOM_SOCKS])
-		socks = random_socks()
-	if(randomise[RANDOM_HAIRSTYLE])
-		hair_style = random_hairstyle(gender)
-	if(randomise[RANDOM_FACIAL_HAIRSTYLE])
-		facial_hair_style = random_facial_hairstyle(gender)
-	if(randomise[RANDOM_HAIR_COLOR])
-		hair_color = random_short_color()
-	if(randomise[RANDOM_FACIAL_HAIR_COLOR])
-		facial_hair_color = random_short_color()
-	if(randomise[RANDOM_SKIN_TONE])
-		skin_tone = random_skin_tone()
-	if(randomise[RANDOM_EYE_COLOR])
-		eye_color = random_eye_color()
+		gender = pick(MALE,FEMALE)
+	underwear = random_underwear(gender)
+	undershirt = random_undershirt(gender)
+	socks = random_socks()
+	skin_tone = random_skin_tone()
+	hair_style = random_hair_style(gender)
+	facial_hair_style = random_facial_hair_style(gender)
+	hair_color = random_short_color()
+	facial_hair_color = hair_color
+	eye_color = random_eye_color()
 	if(!pref_species)
 		var/rando_race = pick(GLOB.roundstart_races)
 		pref_species = new rando_race()
 	features = random_features()
-	if(gender in list(MALE, FEMALE))
-		body_type = gender
-	else
-		body_type = pick(MALE, FEMALE)
-
-/datum/preferences/proc/random_species()
-	var/random_species_type = GLOB.species_list[pick(GLOB.roundstart_races)]
-	pref_species = new random_species_type
-	if(randomise[RANDOM_NAME])
-		real_name = pref_species.random_name(gender,1)
-
+	age = rand(AGE_MIN,AGE_MAX)
 
 /datum/preferences/proc/update_preview_icon()
 	// Silicons only need a very basic preview since there is no customization for them.

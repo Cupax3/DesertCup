@@ -9,7 +9,7 @@
 		MA.vars[v] = set_vars[v]
 	animate(A, appearance = MA, time, loop, easing, flags)
 
-/proc/_arccos(A)
+/proc/_acrccos(A)
 	return arccos(A)
 
 /proc/_arcsin(A)
@@ -47,12 +47,6 @@
 
 /proc/_image(icon, loc, icon_state, layer, dir)
 	return image(icon, loc, icon_state, layer, dir)
-
-/proc/_istype(object, type)
-	return istype(object, type)
-
-/proc/_ispath(path, type)
-	return ispath(path, type)
 
 /proc/_length(E)
 	return length(E)
@@ -214,12 +208,4 @@
 /proc/_step_away(ref, trg, max)
 	step_away(ref, trg, max)
 
-/proc/_has_trait(datum/thing,trait)
-	return HAS_TRAIT(thing,trait)
-
-/proc/_add_trait(datum/thing,trait,source)
-	ADD_TRAIT(thing,trait,source)
-
-/proc/_remove_trait(datum/thing,trait,source)
-	REMOVE_TRAIT(thing,trait,source)
 

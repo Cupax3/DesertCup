@@ -936,6 +936,3 @@
 		return
 	if(client && pulling_delay)
 		client.move_delay += pulling_delay
-
-/mob/proc/set_nutrition(var/change) //Seriously fuck you oldcoders.
-	nutrition = max(0, change)

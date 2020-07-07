@@ -35,21 +35,21 @@
 
 		if(SSdbcore.Connect())
 			var/rating_bad = CONFIG_GET(number/ipintel_rating_bad)
-			var/datum/db_query/query_get_ip_intel = SSdbcore.NewQuery({"
+			var/datum/DBQuery/query_get_ip_intel = SSdbcore.NewQuery({"
 				SELECT date, intel, TIMESTAMPDIFF(MINUTE,date,NOW())
 				FROM [format_table_name("ipintel")]
 				WHERE
-					ip = INET_ATON(':ip')
+					ip = INET_ATON('[ip]')
 					AND ((
-							intel < :rating_bad
+							intel < [rating_bad]
 							AND
-							date + INTERVAL :save_good HOUR > NOW()
+							date + INTERVAL [CONFIG_GET(number/ipintel_save_good)] HOUR > NOW()
 						) OR (
-							intel >= :rating_bad
+							intel >= [rating_bad]
 							AND
-							date + INTERVAL :save_bad HOUR > NOW()
+							date + INTERVAL [CONFIG_GET(number/ipintel_save_bad)] HOUR > NOW()
 					))
-			"}, list("ip" = ip, "rating_bad" = rating_bad, "save_good" = CONFIG_GET(number/ipintel_save_good), "save_bad" = CONFIG_GET(number/ipintel_save_bad)))
+				"})
 			if(!query_get_ip_intel.Execute())
 				qdel(query_get_ip_intel)
 				return
@@ -67,15 +67,12 @@
 	if (updatecache && res.intel >= 0)
 		SSipintel.cache[ip] = res
 		if(SSdbcore.Connect())
-			var/datum/db_query/query_add_ip_intel = SSdbcore.NewQuery(
-				"INSERT INTO [format_table_name("ipintel")] (ip, intel) VALUES (INET_ATON(:ip), :intel) ON DUPLICATE KEY UPDATE intel = VALUES(intel), date = NOW()",
-				list("ip" = ip, "intel" = res.intel)
-			)
+			var/datum/DBQuery/query_add_ip_intel = SSdbcore.NewQuery("INSERT INTO [format_table_name("ipintel")] (ip, intel) VALUES (INET_ATON('[ip]'), [res.intel]) ON DUPLICATE KEY UPDATE intel = VALUES(intel), date = NOW()")
 			query_add_ip_intel.Execute()
 			qdel(query_add_ip_intel)
 
 
-/proc/ip_intel_query(ip, retryed=0)
+/proc/ip_intel_query(ip, var/retryed=0)
 	. = -1 //default
 	if (!ip)
 		return

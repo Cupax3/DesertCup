@@ -375,12 +375,16 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 			log_admin("New user: [key_name_admin(src)] is connecting here for the first time. They joined BYOND on [Joined].")
 			message_admins("New user: [key_name_admin(src)] is connecting here for the first time. They joined BYOND on [Joined].")
 
+			if (CONFIG_GET(flag/irc_first_connection_alert))
+				send2irc_adminless_only("New-user", "[key_name(src)] is connecting for the first time!")
 	else if (isnum(cached_player_age) && cached_player_age < nnpa)
 		message_admins("New user: [key_name_admin(src)] just connected with an age of [cached_player_age] day[(player_age==1?"":"s")]")
 	if(CONFIG_GET(flag/use_account_age_for_jobs) && account_age >= 0)
 		player_age = account_age
 	if(account_age >= 0 && account_age < nnpa)
 		message_admins("[key_name_admin(src)] (IP: [address], ID: [computer_id]) is a new BYOND account [account_age] day[(account_age==1?"":"s")] old, created on [account_join_date].")
+		if (CONFIG_GET(flag/irc_first_connection_alert))
+			send2irc_adminless_only("new_byond_user", "[key_name(src)] (IP: [address], ID: [computer_id]) is a new BYOND account [account_age] day[(account_age==1?"":"s")] old, created on [account_join_date].")
 	get_message_output("watchlist entry", ckey)
 	check_ip_intel()
 
@@ -447,6 +451,23 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		adminGreet(1)
 		holder.owner = null
 		GLOB.admins -= src
+		if (!GLOB.admins.len && SSticker.IsRoundInProgress()) //Only report this stuff if we are currently playing.
+			var/cheesy_message = pick(
+				"I have no admins online!",\
+				"I'm all alone :(",\
+				"I'm feeling lonely :(",\
+				"I'm so lonely :(",\
+				"Why does nobody love me? :(",\
+				"I want a man :(",\
+				"Where has everyone gone?",\
+				"I need a hug :(",\
+				"Someone come hold me :(",\
+				"I need someone on me :(",\
+				"What happened? Where has everyone gone?",\
+				"Forever alone :("\
+			)
+
+			send2irc("Server", "[cheesy_message] (No admins online)")
 
 	GLOB.ahelp_tickets.ClientLogout(src)
 	GLOB.directory -= ckey
@@ -466,23 +487,15 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		return
 	if(!SSdbcore.Connect())
 		return
-	var/datum/db_query/query_get_related_ip = SSdbcore.NewQuery(
-		"SELECT ckey FROM [format_table_name("player")] WHERE ip = INET_ATON(:address) AND ckey != :ckey",
-		list("address" = address, "ckey" = ckey)
-	)
-	if(!query_get_related_ip.Execute())
-		qdel(query_get_related_ip)
-		return
+	var/sql_ckey = sanitizeSQL(src.ckey)
+	var/datum/DBQuery/query_get_related_ip = SSdbcore.NewQuery("SELECT ckey FROM [format_table_name("player")] WHERE ip = INET_ATON('[address]') AND ckey != '[sql_ckey]'")
+	query_get_related_ip.Execute()
 	related_accounts_ip = ""
 	while(query_get_related_ip.NextRow())
 		related_accounts_ip += "[query_get_related_ip.item[1]], "
 	qdel(query_get_related_ip)
-	var/datum/db_query/query_get_related_cid = SSdbcore.NewQuery(
-		"SELECT ckey FROM [format_table_name("player")] WHERE computerid = :computerid AND ckey != :ckey",
-		list("computerid" = computer_id, "ckey" = ckey)
-	)
+	var/datum/DBQuery/query_get_related_cid = SSdbcore.NewQuery("SELECT ckey FROM [format_table_name("player")] WHERE computerid = '[computer_id]' AND ckey != '[sql_ckey]'")
 	if(!query_get_related_cid.Execute())
-		qdel(query_get_related_cid)
 		return
 	related_accounts_cid = ""
 	while (query_get_related_cid.NextRow())
@@ -494,19 +507,19 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 	else
 		if (!GLOB.deadmins[ckey] && check_randomizer(connectiontopic))
 			return
+	var/sql_ip = sanitizeSQL(address)
+	var/sql_computerid = sanitizeSQL(computer_id)
+	var/sql_admin_rank = sanitizeSQL(admin_rank)
 	var/new_player
-	var/datum/db_query/query_client_in_db = SSdbcore.NewQuery(
-		"SELECT 1 FROM [format_table_name("player")] WHERE ckey = :ckey",
-		list("ckey" = ckey)
-	)
+	var/datum/DBQuery/query_client_in_db = SSdbcore.NewQuery("SELECT 1 FROM [format_table_name("player")] WHERE ckey = '[sql_ckey]'")
 	if(!query_client_in_db.Execute())
 		qdel(query_client_in_db)
 		return
 	if(!query_client_in_db.NextRow())
-		if (CONFIG_GET(flag/panic_bunker) && !holder && !GLOB.deadmins[ckey])
+		if (CONFIG_GET(flag/panic_bunker) && !holder && !GLOB.deadmins[ckey] && !ckey in GLOB.bunker_passthrough)
 			log_access("Failed Login: [key] - New account attempting to connect during panic bunker")
 			message_admins("<span class='adminnotice'>Failed Login: [key] - New account attempting to connect during panic bunker</span>")
-			to_chat(src, CONFIG_GET(string/panic_bunker_message))
+			to_chat(src, "Sorry but the server is currently not accepting connections from never before seen players.")
 			var/list/connectiontopic_a = params2list(connectiontopic)
 			var/list/panic_addr = CONFIG_GET(string/panic_server_address)
 			if(panic_addr && !connectiontopic_a["redirect"])
@@ -519,11 +532,8 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 			return
 
 		new_player = 1
-		account_join_date = findJoinDate()
-		var/datum/db_query/query_add_player = SSdbcore.NewQuery({"
-			INSERT INTO [format_table_name("player")] (`ckey`, `byond_key`, `firstseen`, `firstseen_round_id`, `lastseen`, `lastseen_round_id`, `ip`, `computerid`, `lastadminrank`, `accountjoindate`)
-			VALUES (:ckey, :key, Now(), :round_id, Now(), :round_id, INET_ATON(:ip), :computerid, :adminrank, :account_join_date)
-		"}, list("ckey" = ckey, "key" = key, "round_id" = GLOB.round_id, "ip" = address, "computerid" = computer_id, "adminrank" = admin_rank, "account_join_date" = account_join_date || null))
+		account_join_date = sanitizeSQL(findJoinDate())
+		var/datum/DBQuery/query_add_player = SSdbcore.NewQuery("INSERT INTO [format_table_name("player")] (`ckey`, `firstseen`, `firstseen_round_id`, `lastseen`, `lastseen_round_id`, `ip`, `computerid`, `lastadminrank`, `accountjoindate`) VALUES ('[sql_ckey]', Now(), '[GLOB.round_id]', Now(), '[GLOB.round_id]', INET_ATON('[sql_ip]'), '[sql_computerid]', '[sql_admin_rank]', [account_join_date ? "'[account_join_date]'" : "NULL"])")
 		if(!query_add_player.Execute())
 			qdel(query_client_in_db)
 			qdel(query_add_player)
@@ -533,10 +543,7 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 			account_join_date = "Error"
 			account_age = -1
 	qdel(query_client_in_db)
-	var/datum/db_query/query_get_client_age = SSdbcore.NewQuery(
-		"SELECT firstseen, DATEDIFF(Now(),firstseen), accountjoindate, DATEDIFF(Now(),accountjoindate) FROM [format_table_name("player")] WHERE ckey = :ckey",
-		list("ckey" = ckey)
-	)
+	var/datum/DBQuery/query_get_client_age = SSdbcore.NewQuery("SELECT firstseen, DATEDIFF(Now(),firstseen), accountjoindate, DATEDIFF(Now(),accountjoindate) FROM [format_table_name("player")] WHERE ckey = '[sql_ckey]'")
 	if(!query_get_client_age.Execute())
 		qdel(query_get_client_age)
 		return
@@ -547,14 +554,11 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 			account_join_date = query_get_client_age.item[3]
 			account_age = text2num(query_get_client_age.item[4])
 			if(!account_age)
-				account_join_date = findJoinDate()
+				account_join_date = sanitizeSQL(findJoinDate())
 				if(!account_join_date)
 					account_age = -1
 				else
-					var/datum/db_query/query_datediff = SSdbcore.NewQuery(
-						"SELECT DATEDIFF(Now(), :account_join_date)",
-						list("account_join_date" = account_join_date)
-					)
+					var/datum/DBQuery/query_datediff = SSdbcore.NewQuery("SELECT DATEDIFF(Now(),'[account_join_date]')")
 					if(!query_datediff.Execute())
 						qdel(query_datediff)
 						return
@@ -563,25 +567,16 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 					qdel(query_datediff)
 	qdel(query_get_client_age)
 	if(!new_player)
-		var/datum/db_query/query_log_player = SSdbcore.NewQuery(
-			"UPDATE [format_table_name("player")] SET lastseen = Now(), lastseen_round_id = :round_id, ip = INET_ATON(:ip), computerid = :computerid, lastadminrank = :admin_rank, accountjoindate = :account_join_date WHERE ckey = :ckey",
-			list("round_id" = GLOB.round_id, "ip" = address, "computerid" = computer_id, "admin_rank" = admin_rank, "account_join_date" = account_join_date || null, "ckey" = ckey)
-		)
+		var/datum/DBQuery/query_log_player = SSdbcore.NewQuery("UPDATE [format_table_name("player")] SET lastseen = Now(), lastseen_round_id = '[GLOB.round_id]', ip = INET_ATON('[sql_ip]'), computerid = '[sql_computerid]', lastadminrank = '[sql_admin_rank]', accountjoindate = [account_join_date ? "'[account_join_date]'" : "NULL"] WHERE ckey = '[sql_ckey]'")
 		if(!query_log_player.Execute())
 			qdel(query_log_player)
 			return
 		qdel(query_log_player)
 	if(!account_join_date)
 		account_join_date = "Error"
-	var/datum/db_query/query_log_connection = SSdbcore.NewQuery({"
-		INSERT INTO `[format_table_name("connection_log")]` (`id`,`datetime`,`server_ip`,`server_port`,`round_id`,`ckey`,`ip`,`computerid`)
-		VALUES(null,Now(),INET_ATON(:internet_address),:port,:round_id,:ckey,INET_ATON(:ip),:computerid)
-	"}, list("internet_address" = world.internet_address || "0", "port" = world.port, "round_id" = GLOB.round_id, "ckey" = ckey, "ip" = address, "computerid" = computer_id))
+	var/datum/DBQuery/query_log_connection = SSdbcore.NewQuery("INSERT INTO `[format_table_name("connection_log")]` (`id`,`datetime`,`server_ip`,`server_port`,`round_id`,`ckey`,`ip`,`computerid`) VALUES(null,Now(),INET_ATON(IF('[world.internet_address]' LIKE '', '0', '[world.internet_address]')),'[world.port]','[GLOB.round_id]','[sql_ckey]',INET_ATON('[sql_ip]'),'[sql_computerid]')")
 	query_log_connection.Execute()
 	qdel(query_log_connection)
-
-	SSserver_maint.UpdateHubStatus()
-
 	if(new_player)
 		player_age = -1
 	. = player_age
@@ -610,10 +605,8 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 	var/static/tokens = list()
 	var/static/cidcheck_failedckeys = list() //to avoid spamming the admins if the same guy keeps trying.
 	var/static/cidcheck_spoofckeys = list()
-	var/datum/db_query/query_cidcheck = SSdbcore.NewQuery(
-		"SELECT computerid FROM [format_table_name("player")] WHERE ckey = :ckey",
-		list("ckey" = ckey)
-	)
+	var/sql_ckey = sanitizeSQL(ckey)
+	var/datum/DBQuery/query_cidcheck = SSdbcore.NewQuery("SELECT computerid FROM [format_table_name("player")] WHERE ckey = '[sql_ckey]'")
 	query_cidcheck.Execute()
 
 	var/lastcid
@@ -646,7 +639,7 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 
 			if (!cidcheck_failedckeys[ckey])
 				message_admins("<span class='adminnotice'>[key_name(src)] has been detected as using a cid randomizer. Connection rejected.</span>")
-				send2tgs_adminless_only("CidRandomizer", "[key_name(src)] has been detected as using a cid randomizer. Connection rejected.")
+				send2irc_adminless_only("CidRandomizer", "[key_name(src)] has been detected as using a cid randomizer. Connection rejected.")
 				cidcheck_failedckeys[ckey] = TRUE
 				note_randomizer_user()
 
@@ -657,7 +650,7 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		else
 			if (cidcheck_failedckeys[ckey])
 				message_admins("<span class='adminnotice'>[key_name_admin(src)] has been allowed to connect after showing they removed their cid randomizer</span>")
-				send2tgs_adminless_only("CidRandomizer", "[key_name(src)] has been allowed to connect after showing they removed their cid randomizer.")
+				send2irc_adminless_only("CidRandomizer", "[key_name(src)] has been allowed to connect after showing they removed their cid randomizer.")
 				cidcheck_failedckeys -= ckey
 			if (cidcheck_spoofckeys[ckey])
 				message_admins("<span class='adminnotice'>[key_name_admin(src)] has been allowed to connect after appearing to have attempted to spoof a cid randomizer check because it <i>appears</i> they aren't spoofing one this time</span>")
@@ -688,11 +681,10 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 	add_system_note("CID-Error", "Detected as using a cid randomizer.")
 
 /client/proc/add_system_note(system_ckey, message)
+	var/sql_system_ckey = sanitizeSQL(system_ckey)
+	var/sql_ckey = sanitizeSQL(ckey)
 	//check to see if we noted them in the last day.
-	var/datum/db_query/query_get_notes = SSdbcore.NewQuery(
-		"SELECT id FROM [format_table_name("messages")] WHERE type = 'note' AND targetckey = :targetckey AND adminckey = :adminckey AND timestamp + INTERVAL 1 DAY < NOW() AND deleted = 0 AND (expire_timestamp > NOW() OR expire_timestamp IS NULL)",
-		list("targetckey" = ckey, "adminckey" = system_ckey)
-	)
+	var/datum/DBQuery/query_get_notes = SSdbcore.NewQuery("SELECT id FROM [format_table_name("messages")] WHERE type = 'note' AND targetckey = '[sql_ckey]' AND adminckey = '[sql_system_ckey]' AND timestamp + INTERVAL 1 DAY < NOW() AND deleted = 0")
 	if(!query_get_notes.Execute())
 		qdel(query_get_notes)
 		return
@@ -701,10 +693,7 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		return
 	qdel(query_get_notes)
 	//regardless of above, make sure their last note is not from us, as no point in repeating the same note over and over.
-	query_get_notes = SSdbcore.NewQuery(
-		"SELECT adminckey FROM [format_table_name("messages")] WHERE targetckey = :targetckey AND deleted = 0 AND (expire_timestamp > NOW() OR expire_timestamp IS NULL) ORDER BY timestamp DESC LIMIT 1",
-		list("targetckey" = ckey)
-	)
+	query_get_notes = SSdbcore.NewQuery("SELECT adminckey FROM [format_table_name("messages")] WHERE targetckey = '[sql_ckey]' AND deleted = 0 ORDER BY timestamp DESC LIMIT 1")
 	if(!query_get_notes.Execute())
 		qdel(query_get_notes)
 		return
@@ -713,7 +702,7 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 			qdel(query_get_notes)
 			return
 	qdel(query_get_notes)
-	create_message("note", key, system_ckey, message, null, null, 0, 0, null, 0, 0)
+	create_message("note", ckey, system_ckey, message, null, null, 0, 0)
 
 
 /client/proc/check_ip_intel()
@@ -875,20 +864,3 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 /client/proc/AnnouncePR(announcement)
 	if(prefs && prefs.chat_toggles & CHAT_PULLR)
 		to_chat(src, announcement)
-
-/client/proc/update_movement_keys(datum/preferences/direct_prefs)
-	var/datum/preferences/D = prefs || direct_prefs
-	if(!D?.key_bindings)
-		return
-	movement_keys = list()
-	for(var/key in D.key_bindings)
-		for(var/kb_name in D.key_bindings[key])
-			switch(kb_name)
-				if("North")
-					movement_keys[key] = NORTH
-				if("East")
-					movement_keys[key] = EAST
-				if("West")
-					movement_keys[key] = WEST
-				if("South")
-					movement_keys[key] = SOUTH

@@ -17,7 +17,7 @@
 		return -1
 	if(!SSdbcore.Connect())
 		return -1
-	var/datum/db_query/whitelist_read = SSdbcore.NewQuery("SELECT whitelist FROM [format_table_name("role_whitelist")] WHERE ckey = '[sanitizeSQL(ckey)]'")
+	var/datum/DBQuery/whitelist_read = SSdbcore.NewQuery("SELECT whitelist FROM [format_table_name("role_whitelist")] WHERE ckey = '[sanitizeSQL(ckey)]'")
 	if(!whitelist_read.Execute())
 		qdel(whitelist_read)
 		return -1
