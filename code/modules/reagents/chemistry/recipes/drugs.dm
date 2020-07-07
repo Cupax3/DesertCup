@@ -33,3 +33,25 @@
 	id = "aranesp"
 	results = list("aranesp" = 3)
 	required_reagents = list("epinephrine" = 1, "atropine" = 1, "morphine" = 1)
+	
+/datum/chemical_reaction/jet
+	name = "Jet"
+	id = "jet"
+	results = list("jet" = 1)
+	required_reagents = list("milk" = 1, "ammonia" = 1)
+	mix_message = "The mixture bubbles, fumes wafting into the air."
+	required_temp = 374
+	
+/datum/chemical_reaction/turbo
+	name = "Turbo"
+	id = "turbo"
+	results = list("turbo" = 1)
+	required_reagents = list("jet" = 1, "hydrogen" = 2, "welding_fuel" = 3)
+	required_temp = 374
+	
+/datum/chemical_reaction/psycho
+	name = "Psycho Fluid"
+	id = "psycho"
+	results = list("psycho" = 1)
+	required_reagents = list("sacid" = 1, "silicon" = 1, "stimpak" = 1)
+	mix_message = "The fluid froths and foams, turning a blood-red color."
