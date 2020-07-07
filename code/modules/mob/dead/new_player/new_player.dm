@@ -53,7 +53,7 @@
 			var/isadmin = 0
 			if(src.client && src.client.holder)
 				isadmin = 1
-			var/datum/DBQuery/query_get_new_polls = SSdbcore.NewQuery("SELECT id FROM [format_table_name("poll_question")] WHERE [(isadmin ? "" : "adminonly = false AND")] Now() BETWEEN starttime AND endtime AND id NOT IN (SELECT pollid FROM [format_table_name("poll_vote")] WHERE ckey = \"[ckey]\") AND id NOT IN (SELECT pollid FROM [format_table_name("poll_textreply")] WHERE ckey = \"[ckey]\")")
+			var/datum/db_query/query_get_new_polls = SSdbcore.NewQuery("SELECT id FROM [format_table_name("poll_question")] WHERE [(isadmin ? "" : "adminonly = false AND")] Now() BETWEEN starttime AND endtime AND id NOT IN (SELECT pollid FROM [format_table_name("poll_vote")] WHERE ckey = \"[ckey]\") AND id NOT IN (SELECT pollid FROM [format_table_name("poll_textreply")] WHERE ckey = \"[ckey]\")")
 			var/rs = REF(src)
 			if(query_get_new_polls.Execute())
 				var/newpoll = 0
@@ -114,8 +114,8 @@
 		new_player_panel()
 
 	if(href_list["late_join"])
-		if(!SSticker || !SSticker.IsRoundInProgress())
-			to_chat(usr, "<span class='danger'>The round is either not ready, or has already finished...</span>")
+		if(!SSticker?.IsRoundInProgress())
+			to_chat(usr, "<span class='boldwarning'>The round is either not ready, or has already finished...</span>")
 			return
 
 		if(href_list["late_join"] == "override")
@@ -134,18 +134,13 @@
 				SSticker.queued_players += usr
 				to_chat(usr, "<span class='notice'>You have been added to the queue to join the game. Your position in queue is [SSticker.queued_players.len].</span>")
 			return
-
-		if(GLOB.data_core.get_record_by_name(client.prefs.real_name))
-			alert(src, "This character name is already in use. Choose another.")
-			return
-
 		LateChoices()
 
 	if(href_list["manifest"])
 		ViewManifest()
 
 	if(href_list["SelectedJob"])
-		if(!SSticker || !SSticker.IsRoundInProgress())
+		if(!SSticker?.IsRoundInProgress())
 			to_chat(usr, "<span class='danger'>The round is either not ready, or has already finished...</span>")
 			return
 
@@ -171,85 +166,13 @@
 		handle_player_polling()
 		return
 
-	if(href_list["pollid"])
-		var/pollid = href_list["pollid"]
-		if(istext(pollid))
-			pollid = text2num(pollid)
-		if(isnum(pollid) && ISINTEGER(pollid))
-			src.poll_player(pollid)
-		return
+	if(href_list["viewpoll"])
+		var/datum/poll_question/poll = locate(href_list["viewpoll"]) in GLOB.polls
+		poll_player(poll)
 
-	if(href_list["votepollid"] && href_list["votetype"])
-		var/pollid = text2num(href_list["votepollid"])
-		var/votetype = href_list["votetype"]
-		//lets take data from the user to decide what kind of poll this is, without validating it
-		//what could go wrong
-		switch(votetype)
-			if(POLLTYPE_OPTION)
-				var/optionid = text2num(href_list["voteoptionid"])
-				if(vote_on_poll(pollid, optionid))
-					to_chat(usr, "<span class='notice'>Vote successful.</span>")
-				else
-					to_chat(usr, "<span class='danger'>Vote failed, please try again or contact an administrator.</span>")
-			if(POLLTYPE_TEXT)
-				var/replytext = href_list["replytext"]
-				if(log_text_poll_reply(pollid, replytext))
-					to_chat(usr, "<span class='notice'>Feedback logging successful.</span>")
-				else
-					to_chat(usr, "<span class='danger'>Feedback logging failed, please try again or contact an administrator.</span>")
-			if(POLLTYPE_RATING)
-				var/id_min = text2num(href_list["minid"])
-				var/id_max = text2num(href_list["maxid"])
-
-				if( (id_max - id_min) > 100 )	//Basic exploit prevention
-					                            //(protip, this stops no exploits)
-					to_chat(usr, "The option ID difference is too big. Please contact administration or the database admin.")
-					return
-
-				for(var/optionid = id_min; optionid <= id_max; optionid++)
-					if(!isnull(href_list["o[optionid]"]))	//Test if this optionid was replied to
-						var/rating
-						if(href_list["o[optionid]"] == "abstain")
-							rating = null
-						else
-							rating = text2num(href_list["o[optionid]"])
-							if(!isnum(rating) || !ISINTEGER(rating))
-								return
-
-						if(!vote_on_numval_poll(pollid, optionid, rating))
-							to_chat(usr, "<span class='danger'>Vote failed, please try again or contact an administrator.</span>")
-							return
-				to_chat(usr, "<span class='notice'>Vote successful.</span>")
-			if(POLLTYPE_MULTI)
-				var/id_min = text2num(href_list["minoptionid"])
-				var/id_max = text2num(href_list["maxoptionid"])
-
-				if( (id_max - id_min) > 100 )	//Basic exploit prevention
-					to_chat(usr, "The option ID difference is too big. Please contact administration or the database admin.")
-					return
-
-				for(var/optionid = id_min; optionid <= id_max; optionid++)
-					if(!isnull(href_list["option_[optionid]"]))	//Test if this optionid was selected
-						var/i = vote_on_multi_poll(pollid, optionid)
-						switch(i)
-							if(0)
-								continue
-							if(1)
-								to_chat(usr, "<span class='danger'>Vote failed, please try again or contact an administrator.</span>")
-								return
-							if(2)
-								to_chat(usr, "<span class='danger'>Maximum replies reached.</span>")
-								break
-				to_chat(usr, "<span class='notice'>Vote successful.</span>")
-			if(POLLTYPE_IRV)
-				if (!href_list["IRVdata"])
-					to_chat(src, "<span class='danger'>No ordering data found. Please try again or contact an administrator.</span>")
-					return
-				var/list/votelist = splittext(href_list["IRVdata"], ",")
-				if (!vote_on_irv_poll(pollid, votelist))
-					to_chat(src, "<span class='danger'>Vote failed, please try again or contact an administrator.</span>")
-					return
-				to_chat(src, "<span class='notice'>Vote successful.</span>")
+	if(href_list["votepollref"])
+		var/datum/poll_question/poll = locate(href_list["votepollref"]) in GLOB.polls
+		vote_on_poll_handler(poll, href_list)
 
 //When you cop out of the round (NB: this HAS A SLEEP FOR PLAYER INPUT IN IT)
 /mob/dead/new_player/proc/make_me_an_observer()
@@ -320,7 +243,7 @@
 					return JOB_UNAVAILABLE_SLOTFULL
 		else
 			return JOB_UNAVAILABLE_SLOTFULL
-	if(jobban_isbanned(src,rank))
+	if(is_banned_from(src.ckey,rank))
 		return JOB_UNAVAILABLE_BANNED
 	if(QDELETED(src))
 		return JOB_UNAVAILABLE_GENERIC
@@ -328,8 +251,6 @@
 		return JOB_UNAVAILABLE_ACCOUNTAGE
 	if(job.required_playtime_remaining(client))
 		return JOB_UNAVAILABLE_PLAYTIME
-	if(job.whitelist_locked(client,job.title) && (CONFIG_GET(flag/use_role_whitelist)))  //x check if this user should have access to this job via whitelist
-		return JOB_UNAVAILABLE_WHITELIST
 	if(latejoin && !job.special_check_latejoin(client))
 		return JOB_UNAVAILABLE_GENERIC
 
@@ -507,7 +428,7 @@
 
 	var/frn = CONFIG_GET(flag/force_random_names)
 	if(!frn)
-		frn = jobban_isbanned(src, "appearance")
+		frn = is_banned_from(src.ckey, "appearance")
 		if(QDELETED(src))
 			return
 	if(frn)

@@ -39,22 +39,26 @@
 			found_turfs += checkT // Since checkT is connected, add it to the list to be processed
 
 /proc/create_area(mob/creator)
-	var/static/blacklisted_turfs = typecacheof(/turf/open/space)
-	var/static/blacklisted_areas = typecacheof(list(
-		/area/space,
+	// Passed into the above proc as list/break_if_found
+	var/static/area_or_turf_fail_types = typecacheof(list(
+		/turf/open/space,
 		/area/shuttle,
 		))
-	var/list/turfs = detect_room(get_turf(creator), blacklisted_turfs)
+	// Ignore these areas and dont let people expand them. They can expand into them though
+	var/static/blacklisted_areas = typecacheof(list(
+		/area/space,
+		))
+	var/list/turfs = detect_room(get_turf(creator), area_or_turf_fail_types, BP_MAX_ROOM_SIZE*2)
 	if(!turfs)
 		to_chat(creator, "<span class='warning'>The new area must be completely airtight and not a part of a shuttle.</span>")
 		return
 	if(turfs.len > BP_MAX_ROOM_SIZE)
-		to_chat(creator, "<span class='warning'>The room you're in is too big. It is [((turfs.len / BP_MAX_ROOM_SIZE)-1)*100]% larger than allowed.</span>")
+		to_chat(creator, "<span class='warning'>The room you're in is too big. It is [turfs.len >= BP_MAX_ROOM_SIZE *2 ? "more than 100" : ((turfs.len / BP_MAX_ROOM_SIZE)-1)*100]% larger than allowed.</span>")
 		return
 	var/list/areas = list("New Area" = /area)
 	for(var/i in 1 to turfs.len)
 		var/area/place = get_area(turfs[i])
-		if(blacklisted_areas[place.type] || istype(place, /area/shuttle))
+		if(blacklisted_areas[place.type])
 			continue
 		if(!place.requires_power || place.noteleport || place.hidden)
 			continue // No expanding powerless rooms etc
@@ -86,6 +90,8 @@
 		var/area/old_area = thing.loc
 		newA.contents += thing
 		thing.change_area(old_area, newA)
+
+	newA.reg_in_areas_in_z()
 
 	var/list/firedoors = oldA.firedoors
 	for(var/door in firedoors)

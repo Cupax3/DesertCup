@@ -10,7 +10,7 @@ GLOBAL_VAR_INIT(TAB, "&nbsp;&nbsp;&nbsp;&nbsp;")
 
 GLOBAL_DATUM_INIT(data_core, /datum/datacore, new)
 
-GLOBAL_VAR_INIT(CELLRATE, 0.002)  // multiplier for watts per tick <> cell storage (eg: .002 means if there is a load of 1000 watts, 20 units will be taken from a cell per second)
+GLOBAL_VAR_INIT(CELLRATE, 0.002)  // conversion ratio between a watt-tick and kilojoule
 GLOBAL_VAR_INIT(CHARGELEVEL, 0.001) // Cap for how fast cells charge, as a percentage-per-tick (.001 means cellcharge is capped to 1% per second)
 
 GLOBAL_LIST_EMPTY(powernets)
@@ -21,3 +21,13 @@ GLOBAL_LIST_EMPTY(player_details)	// ckey -> /datum/player_details
 
 //Used to store icons generated from typepaths
 GLOBAL_LIST_EMPTY(initialTypeIcon)
+
+///All currently running polls held as datums
+GLOBAL_LIST_EMPTY(polls)
+GLOBAL_PROTECT(polls)
+
+///All poll option datums of running polls
+GLOBAL_LIST_EMPTY(poll_options)
+GLOBAL_PROTECT(poll_options)
+
+GLOBAL_VAR_INIT(internal_tick_usage, 0.2 * world.tick_lag)

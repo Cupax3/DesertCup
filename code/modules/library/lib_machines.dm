@@ -18,15 +18,15 @@
 	name = "library visitor console"
 	icon_state = "oldcomp"
 	icon_screen = "library"
-	icon_keyboard = null
+	icon_keyboard = "no_keyboard"
 	circuit = /obj/item/circuitboard/computer/libraryconsole
 	desc = "Checked out books MUST be returned on time."
 	var/screenstate = 0
 	var/title
 	var/category = "Any"
 	var/author
+	var/search_page = 0
 	var/SQLquery
-	clockwork = TRUE //it'd look weird
 
 /obj/machinery/computer/libraryconsole/ui_interact(mob/user)
 	. = ..()
@@ -49,7 +49,7 @@
 				dat += "<table>"
 				dat += "<tr><td>AUTHOR</td><td>TITLE</td><td>CATEGORY</td><td>SS<sup>13</sup>BN</td></tr>"
 
-				var/datum/DBQuery/query_library_list_books = SSdbcore.NewQuery(SQLquery)
+				var/datum/db_query/query_library_list_books = SSdbcore.NewQuery(SQLquery)
 				if(!query_library_list_books.Execute())
 					dat += "<font color=red><b>ERROR</b>: Unable to retrieve book listings. Please contact your system administrator for assistance.</font><BR>"
 				else
@@ -71,7 +71,7 @@
 
 /obj/machinery/computer/libraryconsole/Topic(href, href_list)
 	. = ..()
-	if(..())
+	if(.)
 		usr << browse(null, "window=publiclibrary")
 		onclose(usr, "publiclibrary")
 		return
@@ -82,28 +82,23 @@
 			title = sanitize(newtitle)
 		else
 			title = null
-		title = sanitizeSQL(title)
 	if(href_list["setcategory"])
 		var/newcategory = input("Choose a category to search for:") in list("Any", "Fiction", "Non-Fiction", "Adult", "Reference", "Religion")
 		if(newcategory)
 			category = sanitize(newcategory)
 		else
 			category = "Any"
-		category = sanitizeSQL(category)
 	if(href_list["setauthor"])
 		var/newauthor = input("Enter an author to search for:") as text|null
 		if(newauthor)
 			author = sanitize(newauthor)
 		else
 			author = null
-		author = sanitizeSQL(author)
 	if(href_list["search"])
-		SQLquery = "SELECT author, title, category, id FROM [format_table_name("library")] WHERE isnull(deleted) AND "
-		if(category == "Any")
-			SQLquery += "author LIKE '%[author]%' AND title LIKE '%[title]%'"
-		else
-			SQLquery += "author LIKE '%[author]%' AND title LIKE '%[title]%' AND category='[category]'"
 		screenstate = 1
+
+	if(href_list["bookpagecount"])
+		search_page = text2num(href_list["bookpagecount"])
 
 	if(href_list["back"])
 		screenstate = 0
@@ -139,7 +134,7 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 	if(!SSdbcore.Connect())
 		return
 	GLOB.cachedbooks = list()
-	var/datum/DBQuery/query_library_cache = SSdbcore.NewQuery("SELECT id, author, title, category FROM [format_table_name("library")] WHERE isnull(deleted)")
+	var/datum/db_query/query_library_cache = SSdbcore.NewQuery("SELECT id, author, title, category FROM [format_table_name("library")] WHERE isnull(deleted)")
 	if(!query_library_cache.Execute())
 		qdel(query_library_cache)
 		return
@@ -345,7 +340,41 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 	if(density && !(obj_flags & EMAGGED))
 		obj_flags |= EMAGGED
 
-/obj/machinery/computer/libraryconsole/bookmanagement/Topic(href, href_list)
+/*
+ * Library Computer
+ * After 860 days, it's finally a buildable computer.
+ */
+// TODO: Make this an actual /obj/machinery/computer that can be crafted from circuit boards and such
+// It is August 22nd, 2012... This TODO has already been here for months.. I wonder how long it'll last before someone does something about it.
+// It's December 25th, 2014, and this is STILL here, and it's STILL relevant. Kill me
+/obj/machinery/computer/bookmanagement
+	name = "book inventory management console"
+	desc = "Librarian's command station."
+	verb_say = "beeps"
+	verb_ask = "beeps"
+	verb_exclaim = "beeps"
+	pass_flags = PASSTABLE
+
+	icon_state = "oldcomp"
+	icon_screen = "library"
+	icon_keyboard = "no_keyboard"
+	circuit = /obj/item/circuitboard/computer/libraryconsole
+
+	var/screenstate = 0 // 0 - Main Menu, 1 - Inventory, 2 - Checked Out, 3 - Check Out a Book
+
+	var/arcanecheckout = 0
+	var/buffer_book
+	var/buffer_mob
+	var/upload_category = "Fiction"
+	var/list/checkouts = list()
+	var/list/inventory = list()
+	var/checkoutperiod = 5 // In minutes
+	var/obj/machinery/libraryscanner/scanner // Book scanner that will be used when uploading books to the Archive
+	var/list/libcomp_menu
+	var/page = 1	//current page of the external archives
+	var/cooldown = 0
+
+/obj/machinery/computer/bookmanagement/Topic(href, href_list)
 	if(..())
 		usr << browse(null, "window=library")
 		onclose(usr, "library")
@@ -383,9 +412,9 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 		if(checkoutperiod < 1)
 			checkoutperiod = 1
 	if(href_list["editbook"])
-		buffer_book = copytext(sanitize(input("Enter the book's title:") as text|null),1,MAX_MESSAGE_LEN)
+		buffer_book = stripped_input(usr, "Enter the book's title:")
 	if(href_list["editmob"])
-		buffer_mob = copytext(sanitize(input("Enter the recipient's name:") as text|null),1,MAX_NAME_LEN)
+		buffer_mob = stripped_input(usr, "Enter the recipient's name:", max_length = MAX_NAME_LEN)
 	if(href_list["checkout"])
 		var/datum/borrowbook/b = new /datum/borrowbook
 		b.bookname = sanitize(buffer_book)
@@ -402,7 +431,7 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 		if(b && istype(b))
 			inventory.Remove(b)
 	if(href_list["setauthor"])
-		var/newauthor = copytext(sanitize(input("Enter the author's name: ") as text|null),1,MAX_MESSAGE_LEN)
+		var/newauthor = stripped_input(usr, "Enter the author's name: ")
 		if(newauthor)
 			scanner.cache.author = newauthor
 	if(href_list["setcategory"])
@@ -417,13 +446,11 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 					if (!SSdbcore.Connect())
 						alert("Connection to Archive has been severed. Aborting.")
 					else
-
-						var/sqltitle = sanitizeSQL(scanner.cache.name)
-						var/sqlauthor = sanitizeSQL(scanner.cache.author)
-						var/sqlcontent = sanitizeSQL(scanner.cache.dat)
-						var/sqlcategory = sanitizeSQL(upload_category)
 						var/msg = "[key_name(usr)] has uploaded the book titled [scanner.cache.name], [length(scanner.cache.dat)] signs"
-						var/datum/DBQuery/query_library_upload = SSdbcore.NewQuery("INSERT INTO [format_table_name("library")] (author, title, content, category, ckey, datetime, round_id_created) VALUES ('[sqlauthor]', '[sqltitle]', '[sqlcontent]', '[sqlcategory]', '[usr.ckey]', Now(), '[GLOB.round_id]')")
+						var/datum/db_query/query_library_upload = SSdbcore.NewQuery({"
+							INSERT INTO [format_table_name("library")] (author, title, content, category, ckey, datetime, round_id_created)
+							VALUES (:author, :title, :content, :category, :ckey, Now(), :round_id)
+						"}, list("title" = scanner.cache.name, "author" = scanner.cache.author, "content" = scanner.cache.dat, "category" = upload_category, "ckey" = usr.ckey, "round_id" = GLOB.round_id))
 						if(!query_library_upload.Execute())
 							qdel(query_library_upload)
 							alert("Database error encountered uploading to Archive")
@@ -437,12 +464,12 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 			alert("No news network found on station. Aborting.")
 		var/channelexists = 0
 		for(var/datum/newscaster/feed_channel/FC in GLOB.news_network.network_channels)
-			if(FC.channel_name == "Book Club")
+			if(FC.channel_name == "Nanotrasen Book Club")
 				channelexists = 1
 				break
 		if(!channelexists)
-			GLOB.news_network.CreateFeedChannel("Book Club", "Library", null)
-		GLOB.news_network.SubmitArticle(scanner.cache.dat, "[scanner.cache.name]", "Book Club", null)
+			GLOB.news_network.CreateFeedChannel("Nanotrasen Book Club", "Library", null)
+		GLOB.news_network.SubmitArticle(scanner.cache.dat, "[scanner.cache.name]", "Nanotrasen Book Club", null)
 		alert("Upload complete. Your uploaded title is now available on station newscasters.")
 	if(href_list["orderbyid"])
 		if(cooldown > world.time)
@@ -454,14 +481,17 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 					href_list["targetid"] = num2text(orderid)
 
 	if(href_list["targetid"])
-		var/sqlid = sanitizeSQL(href_list["targetid"])
+		var/id = href_list["targetid"]
 		if (!SSdbcore.Connect())
 			alert("Connection to Archive has been severed. Aborting.")
 		if(cooldown > world.time)
 			say("Printer unavailable. Please allow a short time before attempting to print.")
 		else
 			cooldown = world.time + PRINTER_COOLDOWN
-			var/datum/DBQuery/query_library_print = SSdbcore.NewQuery("SELECT * FROM [format_table_name("library")] WHERE id=[sqlid] AND isnull(deleted)")
+			var/datum/db_query/query_library_print = SSdbcore.NewQuery(
+				"SELECT * FROM [format_table_name("library")] WHERE id=:id AND isnull(deleted)",
+				list("id" = id)
+			)
 			if(!query_library_print.Execute())
 				qdel(query_library_print)
 				say("PRINTER ERROR! Failed to print document (0x0000000F)")
@@ -477,20 +507,9 @@ GLOBAL_LIST(cachedbooks) // List of our cached book datums
 					B.author = author
 					B.dat = content
 					B.icon_state = "book[rand(1,8)]"
-					visible_message("[src]'s printer hums as it produces a completely bound book. How did it do that?")
+					visible_message("<span class='notice'>[src]'s printer hums as it produces a completely bound book. How did it do that?</span>")
 				break
 			qdel(query_library_print)
-	if(href_list["printbible"])
-		if(cooldown < world.time)
-			var/obj/item/storage/book/bible/B = new /obj/item/storage/book/bible(src.loc)
-			if(SSreligion.bible_icon_state && SSreligion.bible_item_state)
-				B.icon_state = SSreligion.bible_icon_state
-				B.item_state = SSreligion.bible_item_state
-				B.name = SSreligion.bible_name
-				B.deity_name = SSreligion.deity
-			cooldown = world.time + PRINTER_COOLDOWN
-		else
-			say("Printer currently unavailable, please wait a moment.")
 	if(href_list["printposter"])
 		if(cooldown < world.time)
 			new /obj/item/poster/random_official(src.loc)

@@ -18,6 +18,22 @@ GLOBAL_DATUM_INIT(_preloader, /datum/map_preloader, new)
 	var/list/gridSets = list()
 	var/list/bounds = list(1.#INF, 1.#INF, 1.#INF, -1.#INF, -1.#INF, -1.#INF)
 	var/key_len = 0
+	var/original_path
+
+	var/list/modelCache
+
+	/// Unoffset bounds. Null on parse failure.
+	var/list/parsed_bounds
+
+	// raw strings used to represent regexes more accurately
+	// '' used to avoid confusing syntax highlighting
+	var/static/regex/dmmRegex = new(@'"([a-zA-Z]+)" = \(((?:.|\n)*?)\)\n(?!\t)|\((\d+),(\d+),(\d+)\) = \{"([a-zA-Z\n]*)"\}', "g")
+	var/static/regex/trimQuotesRegex = new(@'^[\s\n]+"?|"?[\s\n]+$|^"|"$', "g")
+	var/static/regex/trimRegex = new(@'^[\s\n]+|[\s\n]+$', "g")
+
+	#ifdef TESTING
+	var/turfsSkipped = 0
+	#endif
 
 /datum/parsed_map/proc/initTemplateBounds()
 	var/list/obj/machinery/atmospherics/atmos_machines = list()
@@ -307,6 +323,175 @@ GLOBAL_DATUM_INIT(_preloader, /datum/map_preloader, new)
 
 
 		.[model_key] = list(members, members_attributes)
+
+/datum/parsed_map/proc/build_cache(no_changeturf, bad_paths=null)
+	if(modelCache && !bad_paths)
+		return modelCache
+	. = modelCache = list()
+	var/list/grid_models = src.grid_models
+	for(var/model_key in grid_models)
+		var/model = grid_models[model_key]
+		var/list/members = list() //will contain all members (paths) in model (in our example : /turf/unsimulated/wall and /area/mine/explored)
+		var/list/members_attributes = list() //will contain lists filled with corresponding variables, if any (in our example : list(icon_state = "rock") and list())
+
+		/////////////////////////////////////////////////////////
+		//Constructing members and corresponding variables lists
+		////////////////////////////////////////////////////////
+
+		var/index = 1
+		var/old_position = 1
+		var/dpos
+
+		while(dpos != 0)
+			//finding next member (e.g /turf/unsimulated/wall{icon_state = "rock"} or /area/mine/explored)
+			dpos = find_next_delimiter_position(model, old_position, ",", "{", "}") //find next delimiter (comma here) that's not within {...}
+
+			var/full_def = trim_text(copytext(model, old_position, dpos)) //full definition, e.g : /obj/foo/bar{variables=derp}
+			var/variables_start = findtext(full_def, "{")
+			var/path_text = trim_text(copytext(full_def, 1, variables_start))
+			var/atom_def = text2path(path_text) //path definition, e.g /obj/foo/bar
+			if(dpos)
+				old_position = dpos + length(model[dpos])
+
+			if(!ispath(atom_def, /atom)) // Skip the item if the path does not exist.  Fix your crap, mappers!
+				if(bad_paths)
+					LAZYOR(bad_paths[path_text], model_key)
+				continue
+			members.Add(atom_def)
+
+			//transform the variables in text format into a list (e.g {var1="derp"; var2; var3=7} => list(var1="derp", var2, var3=7))
+			var/list/fields = list()
+
+			if(variables_start)//if there's any variable
+				full_def = copytext(full_def, variables_start + length(full_def[variables_start]), -length(copytext_char(full_def, -1))) //removing the last '}'
+				fields = readlist(full_def, ";")
+				if(fields.len)
+					if(!trim(fields[fields.len]))
+						--fields.len
+					for(var/I in fields)
+						var/value = fields[I]
+						if(istext(value))
+							fields[I] = apply_text_macros(value)
+
+			//then fill the members_attributes list with the corresponding variables
+			members_attributes.len++
+			members_attributes[index++] = fields
+
+			CHECK_TICK
+
+		//check and see if we can just skip this turf
+		//So you don't have to understand this horrid statement, we can do this if
+		// 1. no_changeturf is set
+		// 2. the space_key isn't set yet
+		// 3. there are exactly 2 members
+		// 4. with no attributes
+		// 5. and the members are world.turf and world.area
+		// Basically, if we find an entry like this: "XXX" = (/turf/default, /area/default)
+		// We can skip calling this proc every time we see XXX
+		if(no_changeturf \
+			&& !(.[SPACE_KEY]) \
+			&& members.len == 2 \
+			&& members_attributes.len == 2 \
+			&& length(members_attributes[1]) == 0 \
+			&& length(members_attributes[2]) == 0 \
+			&& (world.area in members) \
+			&& (world.turf in members))
+
+			.[SPACE_KEY] = model_key
+			continue
+
+
+		.[model_key] = list(members, members_attributes)
+
+//text trimming (both directions) helper proc
+//optionally removes quotes before and after the text (for variable name)
+/datum/parsed_map/proc/trim_text(what as text,trim_quotes=0)
+	if(trim_quotes)
+		return trimQuotesRegex.Replace(what, "")
+	else
+		return trimRegex.Replace(what, "")
+
+
+//find the position of the next delimiter,skipping whatever is comprised between opening_escape and closing_escape
+//returns 0 if reached the last delimiter
+/datum/parsed_map/proc/find_next_delimiter_position(text as text,initial_position as num, delimiter=",",opening_escape="\"",closing_escape="\"")
+	var/position = initial_position
+	var/next_delimiter = findtext(text,delimiter,position,0)
+	var/next_opening = findtext(text,opening_escape,position,0)
+
+	while((next_opening != 0) && (next_opening < next_delimiter))
+		position = findtext(text,closing_escape,next_opening + 1,0)+1
+		next_delimiter = findtext(text,delimiter,position,0)
+		next_opening = findtext(text,opening_escape,position,0)
+
+	return next_delimiter
+
+
+//build a list from variables in text form (e.g {var1="derp"; var2; var3=7} => list(var1="derp", var2, var3=7))
+//return the filled list
+/datum/parsed_map/proc/readlist(text as text, delimiter=",")
+	. = list()
+	if (!text)
+		return
+
+	var/position
+	var/old_position = 1
+
+	while(position != 0)
+		// find next delimiter that is not within  "..."
+		position = find_next_delimiter_position(text,old_position,delimiter)
+
+		// check if this is a simple variable (as in list(var1, var2)) or an associative one (as in list(var1="foo",var2=7))
+		var/equal_position = findtext(text,"=",old_position, position)
+
+		var/trim_left = trim_text(copytext(text,old_position,(equal_position ? equal_position : position)))
+		var/left_constant = delimiter == ";" ? trim_left : parse_constant(trim_left)
+		if(position)
+			old_position = position + length(text[position])
+
+		if(equal_position && !isnum(left_constant))
+			// Associative var, so do the association.
+			// Note that numbers cannot be keys - the RHS is dropped if so.
+			var/trim_right = trim_text(copytext(text, equal_position + length(text[equal_position]), position))
+			var/right_constant = parse_constant(trim_right)
+			.[left_constant] = right_constant
+
+		else  // simple var
+			. += list(left_constant)
+
+/datum/parsed_map/proc/parse_constant(text)
+	// number
+	var/num = text2num(text)
+	if(isnum(num))
+		return num
+
+	// string
+	if(text[1] == "\"")
+		return copytext(text, length(text[1]) + 1, findtext(text, "\"", length(text[1]) + 1))
+
+	// list
+	if(copytext(text, 1, 6) == "list(")//6 == length("list(") + 1
+		return readlist(copytext(text, 6, -1))
+
+	// typepath
+	var/path = text2path(text)
+	if(ispath(path))
+		return path
+
+	// file
+	if(text[1] == "'")
+		return file(copytext_char(text, 2, -1))
+
+	// null
+	if(text == "null")
+		return null
+
+	// not parsed:
+	// - pops: /obj{name="foo"}
+	// - new(), newlist(), icon(), matrix(), sound()
+
+	// fallback: string
+	return text
 
 /datum/maploader/proc/build_coordinate(list/model, xcrd as num, ycrd as num, zcrd as num, no_changeturf as num, placeOnTop as num)
 	var/index

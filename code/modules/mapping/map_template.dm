@@ -5,27 +5,32 @@
 	var/mappath = null
 	var/loaded = 0 // Times loaded this round
 	var/static/datum/maploader/maploader = new
+	var/datum/parsed_map/cached_map
+	var/keep_cached_map = FALSE
 
-/datum/map_template/New(path = null, rename = null)
+/datum/map_template/New(path = null, rename = null, cache = FALSE)
 	if(path)
 		mappath = path
 	if(mappath)
-		preload_size(mappath)
+		preload_size(mappath, cache)
 	if(rename)
 		name = rename
 
-/datum/map_template/proc/preload_size(path)
-	var/datum/parsed_map/parsed = maploader.load_map(file(path), 1, 1, 1, cropMap=FALSE, measureOnly=TRUE)
+/datum/map_template/proc/preload_size(path, cache = FALSE)
+	var/datum/parsed_map/parsed = new(file(path))
 	var/bounds = parsed?.bounds
 	if(bounds)
 		width = bounds[MAP_MAXX] // Assumes all templates are rectangular, have a single Z level, and begin at 1,1,1
 		height = bounds[MAP_MAXY]
+		if(cache)
+			cached_map = parsed
 	return bounds
 
 /datum/map_template/proc/initTemplateBounds(var/list/bounds)
 	var/list/obj/machinery/atmospherics/atmos_machines = list()
 	var/list/obj/structure/cable/cables = list()
 	var/list/atom/atoms = list()
+	var/list/area/areas = list()
 
 	var/list/turfs = block(	locate(bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ]),
 							locate(bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ]))
@@ -34,6 +39,7 @@
 	for(var/L in turfs)
 		var/turf/B = L
 		atoms += B
+		areas |= B.loc
 		for(var/A in B)
 			atoms += A
 			if(istype(A, /obj/structure/cable))
@@ -45,6 +51,7 @@
 		var/turf/T = L
 		T.air_update_turf(TRUE) //calculate adjacent turfs along the border to prevent runtimes
 
+	SSmapping.reg_in_areas_in_z(areas)
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
