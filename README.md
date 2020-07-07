@@ -1,3 +1,7 @@
+# Unofficial Fallout 13 Codebase
+
+## We do not consider, call or advertise ourselves as an official Fallout 13 Codebase.
+
 ## F13 codebase 
 
 [![Build Status](https://travis-ci.org/BadDeathclaw/TG-Claw.svg?branch=master)](https://travis-ci.org/BadDeathclaw/TG-Claw) [![Krihelimeter](https://www.krihelinator.xyz/badge/BadDeathclaw/TG-Claw)](http://www.krihelinator.xyz/repositories/BadDeathclaw/TG-Claw) 

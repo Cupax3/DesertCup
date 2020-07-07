@@ -1298,9 +1298,9 @@
 	. = 1
 
 datum/reagent/medicine/super_stimpak
-	name = "super stim chemicals"
+	name = "Advanced Stimpak Fluid"
 	id = "super_stimpak"
-	description = "Chemicals found in pre-war stimpaks."
+	description = "A strange concoction of medicines and chemicals. This heals faster than normal stimpaks, but has a lower overdose threshold."
 	reagent_state = LIQUID
 	color = "#e50d0d"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
@@ -1755,5 +1755,34 @@ datum/reagent/medicine/bitter_drink/on_mob_life(mob/living/M)
 /datum/reagent/medicine/diluted_stimpak/overdose_process(mob/living/M)
 	M.adjustToxLoss(5*REM, 0)
 	M.adjustOxyLoss(8*REM, 0)
+	..()
+	. = 1
+  
+/datum/reagent/medicine/ultra_stimpak
+	name = "Experimental Stimpak Fluid"
+	id = "ultra_stimpak"
+	description = "An experimental, pre-war chemical soup that cannot be replicated with post-war tools. Extremely potent, but has a painfully low overdose threshold."
+	reagent_state = LIQUID
+	color = "#e50d0d"
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	overdose_threshold = 10
+
+/datum/reagent/medicine/ultra_stimpak/on_mob_life(mob/living/M)
+	if(M.getBruteLoss() == 0 && M.getFireLoss() == 0 && M.getToxLoss() == 0 && M.getOxyLoss() == 0)
+		metabolization_rate = 1000 * REAGENTS_METABOLISM //instant metabolise if it won't help you, prevents prehealing before combat
+	if(!M.reagents.has_reagent("healing_poultice") && !M.reagents.has_reagent("stimpak") && !M.reagents.has_reagent("healing_powder")) // We don't want these healing items to stack, so we only apply the healing if these chems aren't found. We only check for the less powerful chems, so the least powerful one always heals.
+		M.adjustBruteLoss(-12*REM)
+		M.adjustFireLoss(-12*REM)
+		M.adjustOxyLoss(-4*REM)
+		M.adjustToxLoss(-4*REM, 0)
+		M.AdjustStun(-15, 0)
+		M.AdjustKnockdown(-15, 0)
+		M.adjustStaminaLoss(-6*REM, 0)
+		. = 1
+	..()
+
+/datum/reagent/medicine/ultra_stimpak/overdose_process(mob/living/M)
+	M.adjustToxLoss(12*REM, 0)
+	M.adjustOxyLoss(15*REM, 0)
 	..()
 	. = 1

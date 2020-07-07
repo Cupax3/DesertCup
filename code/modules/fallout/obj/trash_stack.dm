@@ -93,7 +93,8 @@
 		/obj/item/clothing/gloves/f13/military, /obj/item/clothing/gloves/f13/ncr,
 		/obj/item/gun/ballistic/shotgun/boltaction, /obj/item/toy/crayon/spraycan, /obj/item/stock_parts/capacitor/adv,
 		/obj/item/stock_parts/scanning_module/adv, /obj/item/stock_parts/manipulator/nano, /obj/item/stock_parts/micro_laser/high,
-		/obj/item/stock_parts/matter_bin/adv, /obj/item/stock_parts/manipulator/pico, /obj/item/stock_parts/matter_bin/super)
+		/obj/item/stock_parts/matter_bin/adv, /obj/item/stock_parts/manipulator/pico, /obj/item/stock_parts/matter_bin/super,
+		/obj/item/reagent_containers/hypospray/medipen/stimpak/diluted)
 		var/I = new itemtype(src)
 		back += I
 	return back

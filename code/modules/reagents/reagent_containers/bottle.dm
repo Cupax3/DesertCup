@@ -311,7 +311,9 @@
 	list_reagents = list("bitter_drink" = 30)
 
 /obj/item/reagent_containers/glass/bottle/blackpowder
-	name = "blackpowder bottle"
-	desc = "A large bottle containing black powder."
-	volume = 60
-	list_reagents = list("blackpowder" = 60)
+	name = "gunpowder bottle"
+	desc = "A small, red bottle containing some blackpowder. Used in crafting guns and ammunition, or as a makeshift explosive."
+	icon = 'icons/obj/drinks.dmi'
+	icon_state = "gunpowderbottle"
+	volume = 10
+	list_reagents = list("blackpowder" = 10)

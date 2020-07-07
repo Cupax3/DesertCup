@@ -42,44 +42,6 @@
 	target.regenerate_icons()
 	return 1
 
-/datum/surgery/castration
-	name = "castration"
-	species = list(/mob/living/carbon/human)
-	possible_locs = list(BODY_ZONE_PRECISE_GROIN)
-	steps = list(
-		/datum/surgery_step/incise,
-		/datum/surgery_step/clamp_bleeders,
-		/datum/surgery_step/castration,
-		/datum/surgery_step/close
-		)
-
-/datum/surgery_step/castration
-	name = "castration"
-	implements = list(/obj/item/scalpel = 100, /obj/item/hatchet = 50, /obj/item/wirecutters = 35)
-	time = 32
-
-/datum/surgery_step/castration/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	var/mob/living/carbon/human/H = target	//no type check, as that should be handled by the surgery
-	if(H.has_penis == TRUE)
-		user.visible_message("[user] begins to slice away at [target]'s penis.", "<span class='notice'>You begin to slice away at [target]'s penis.</span>")
-	else
-		return 0
-
-/datum/surgery_step/castration/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	var/mob/living/carbon/human/H = target	//no type check, as that should be handled by the surgery
-	if(H.has_penis)
-		user.visible_message("[user] castrated [target].", "<span class='notice'>You finished castrating [target].</span>")
-		H.has_penis = FALSE
-	return 1
-
-/datum/surgery_step/castration/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	var/mob/living/carbon/human/H = target
-	user.visible_message("<span class='warning'>[user] accidentally sinks the [tool] deep into the remnants of [target]'s penis.</span>", "<span class='warning'>You accidentally sink the [tool] deep into the remnants of [target]'s penis!</span>")
-	H.has_vagina = TRUE
-	target.regenerate_icons()
-	return 1
-
-
 /datum/surgery/gender_reassignment_top
 	name = "gender reassignment - top surgery"
 	species = list(/mob/living/carbon/human)
