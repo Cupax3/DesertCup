@@ -1765,7 +1765,7 @@ datum/reagent/medicine/bitter_drink/on_mob_life(mob/living/M)
 	reagent_state = LIQUID
 	color = "#e50d0d"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
-	overdose_threshold = 10
+	overdose_threshold = 11
 
 /datum/reagent/medicine/ultra_stimpak/on_mob_life(mob/living/M)
 	if(M.getBruteLoss() == 0 && M.getFireLoss() == 0 && M.getToxLoss() == 0 && M.getOxyLoss() == 0)
