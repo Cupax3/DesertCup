@@ -1,0 +1,4 @@
+author: "genessee596"
+delete-after: True
+changes: 
+  - bugfix: "Experimental stimpaks no longer kill whoever uses them"
